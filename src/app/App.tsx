@@ -6,7 +6,9 @@ import { importMarkdownFile } from "../function/markdown-import";
 import { CanvasView } from "../views/canvas/CanvasView";
 import { NotesView } from "../views/notes/NotesView";
 import { WorkspaceSearchDialog } from "../views/search/WorkspaceSearchDialog";
+import { SettingsDialog } from "../views/settings/SettingsDialog";
 import { UpdatesDialog } from "../views/updates/UpdatesDialog";
+import type { WindowZoom } from "../workspace/desktopWorkspace";
 import { createSampleWorkspace } from "../workspace/sampleWorkspace";
 import { createCanvas } from "../workspace/workspace";
 import type { Workspace, WorkspaceEntry, WorkspaceStorage } from "../workspace/workspace";
@@ -16,11 +18,12 @@ export interface AppProps {
   storage: WorkspaceStorage;
   isPreview?: boolean;
   toggleMaximized?: () => Promise<void>;
+  windowZoom?: WindowZoom;
 }
 
 type SaveStatus = "saved" | "saving" | "failed";
 
-export function App({ storage, isPreview = false, toggleMaximized }: AppProps) {
+export function App({ storage, isPreview = false, toggleMaximized, windowZoom }: AppProps) {
   const current = useRef<Workspace | null>(null);
   const saveNumber = useRef(0);
   const [workspace, setWorkspace] = useState<Workspace | null>(null);
@@ -30,7 +33,7 @@ export function App({ storage, isPreview = false, toggleMaximized }: AppProps) {
   const [entryToDelete, setEntryToDelete] = useState<WorkspaceEntry | null>(null);
   const [alert, setAlert] = useState<string | null>(null);
   const [importing, setImporting] = useState(false);
-  const [updatesOpen, setUpdatesOpen] = useState(false);
+  const [sidebarDialog, setSidebarDialog] = useState<"updates" | "settings" | null>(null);
   const [searchOpen, setSearchOpen] = useState(false);
   const [canvasNode, setCanvasNode] = useState<{ canvasId: string; nodeId: string } | null>(null);
 
@@ -69,7 +72,7 @@ export function App({ storage, isPreview = false, toggleMaximized }: AppProps) {
   useEffect(() => {
     function handleShortcut(event: KeyboardEvent) {
       if (!(event.ctrlKey || event.metaKey) || event.altKey || event.shiftKey || event.isComposing
-        || !current.current || updatesOpen || entryToDelete) return;
+        || !current.current || sidebarDialog || entryToDelete) return;
       if (event.key.toLowerCase() === "k") {
         event.preventDefault();
         setSearchOpen(true);
@@ -80,7 +83,7 @@ export function App({ storage, isPreview = false, toggleMaximized }: AppProps) {
     }
     window.addEventListener("keydown", handleShortcut);
     return () => window.removeEventListener("keydown", handleShortcut);
-  }, [updatesOpen, entryToDelete, toggleSidebar]);
+  }, [sidebarDialog, entryToDelete, toggleSidebar]);
 
   function update(edit: (workspace: Workspace) => Workspace) {
     if (current.current) save(edit(current.current));
@@ -164,7 +167,8 @@ export function App({ storage, isPreview = false, toggleMaximized }: AppProps) {
         onRename={renameEntry}
         onDuplicateCanvas={copyCanvas}
         onDelete={setEntryToDelete}
-        onShowUpdates={() => setUpdatesOpen(true)}
+        onShowUpdates={() => setSidebarDialog("updates")}
+        onShowSettings={() => setSidebarDialog("settings")}
         onImportMarkdown={workspace && !importing ? importNote : undefined}
         onSearch={workspace ? () => setSearchOpen(true) : undefined}
       />}
@@ -225,7 +229,8 @@ export function App({ storage, isPreview = false, toggleMaximized }: AppProps) {
           setCanvasNode(nodeId ? { canvasId: entry.id, nodeId } : null);
           update((previous) => ({ ...previous, activeEntry: entry }));
         }} />}
-      {updatesOpen && <UpdatesDialog onClose={() => setUpdatesOpen(false)} />}
+      {sidebarDialog === "updates" && <UpdatesDialog onClose={() => setSidebarDialog(null)} />}
+      {sidebarDialog === "settings" && <SettingsDialog zoom={windowZoom} onClose={() => setSidebarDialog(null)} />}
       {entryToDelete && <div className="dialog-backdrop" onClick={() => setEntryToDelete(null)}>
         <form role="alertdialog" aria-modal="true" aria-labelledby="delete-title" className="dialog"
           onClick={(event) => event.stopPropagation()} onSubmit={(event) => {

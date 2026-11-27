@@ -30,10 +30,10 @@
 
 ## 快速开始
 
-在 Ubuntu 或 Debian 的 x86_64 电脑上，从 GitHub Releases 的 Assets 下载 `inkbench_1.1.3_amd64.deb`，然后在安装包所在目录运行以下命令。安装完成后，从系统应用菜单打开 Inkbench。[下载安装包](https://github.com/995916639a-coder/Inkbench/releases/latest)
+在 Ubuntu 或 Debian 的 x86_64 电脑上，从 GitHub Releases 的 Assets 下载 `inkbench_1.1.4_amd64.deb`，然后在安装包所在目录运行以下命令。安装完成后，从系统应用菜单打开 Inkbench。[下载安装包](https://github.com/995916639a-coder/Inkbench/releases/latest)
 
 ```sh
-sudo apt install ./inkbench_1.1.3_amd64.deb
+sudo apt install ./inkbench_1.1.4_amd64.deb
 ```
 
 ### 开始记笔记
@@ -44,7 +44,7 @@ sudo apt install ./inkbench_1.1.3_amd64.deb
 4. 桌面版启动时最大化并保留系统标题栏。按 F11 或点击应用右上角的窗口按钮可最大化或还原窗口。
 5. 点击工作台顶部的侧栏按钮，或按 `Ctrl+\\`，可以收起或展开文件列表。
 
-按 `Ctrl + +` 或 `Ctrl + =` 放大整个应用，`Ctrl + -` 缩小，`Ctrl + 0` 恢复到 100%。
+点击侧栏左下角的齿轮打开设置，可以调整界面缩放。也可按 `Ctrl + +` 或 `Ctrl + =` 放大整个应用，`Ctrl + -` 缩小，`Ctrl + 0` 恢复到 100%。
 
 在侧栏的条目菜单里选择「重命名」。输入后点击输入框外或按 Enter 保存，按 Esc 取消。
 

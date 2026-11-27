@@ -14,6 +14,7 @@
 | `src/views/canvas/CanvasToolbar.tsx` | `CanvasToolbar` 接收当前工具和缩放比例，通过回调请求切换工具、放置笔记、撤销笔迹和缩放。 |
 | `src/views/canvas/CanvasItemsLayer.tsx`、`MindMapLayer.tsx` | 分别显示普通画布对象和导图节点，页面负责协调交互和保存。 |
 | `src/views/updates/UpdatesDialog.tsx` | `UpdatesDialog` 将根目录的 `update.md` 渲染为侧栏更新公告。 |
+| `src/views/settings/SettingsDialog.tsx` | `SettingsDialog` 提供桌面界面缩放控件，通过 `WindowZoom` 读写窗口比例。 |
 | `src/editor/RichTextEditor.tsx` | `RichTextEditor` 接收结构化正文，通过 `onChange` 返回更新后的正文。 |
 
 ## 底层能力
@@ -46,7 +47,7 @@
 | --- | --- |
 | `desktop/main.ts` | 创建带系统标题栏的最大化窗口，初始化工作区存储并处理桌面请求。 |
 | `desktop/window.ts` | `registerWindowShortcuts(window)` 处理 F11 和界面缩放快捷键。界面缩放使用 Electron 的页面缩放，画布视口独立保存。 |
-| `desktop/preload.ts` | 将 `DesktopBridge` 提供给界面，用于加载、保存以及最大化或还原窗口。 |
+| `desktop/preload.ts` | 将 `DesktopBridge` 提供给界面，用于加载、保存、管理窗口大小以及读取、调整和监听界面缩放。 |
 | `desktop/workspaceStore.ts` | `createWorkspaceStore(filePath)` 返回文件存储，在应用数据目录读写 `workspace.json`。保存时写入同目录临时文件，再替换正式文件。 |
 | `src/workspace/workspace.ts` | 定义 `Workspace`、`CanvasDocument` 和加载、保存接口。`createCanvas(id, title?)` 创建空白画布。 |
 | `src/workspace/desktopWorkspace.ts` | 定义桌面接口 `DesktopBridge`。桌面窗口通过 `window.inkbench` 提供该接口。 |

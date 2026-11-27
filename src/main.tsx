@@ -16,5 +16,6 @@ createRoot(root).render(
     storage={bridge ?? createBrowserWorkspaceStorage()}
     isPreview={!bridge}
     toggleMaximized={bridge?.toggleMaximized}
+    windowZoom={bridge?.zoom}
   />,
 );

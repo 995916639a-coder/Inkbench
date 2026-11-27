@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { Bell, ChevronDown, Copy, FileText, FileUp, LayoutTemplate, MoreHorizontal, NotebookPen, Pencil, Plus, Search, Trash2 } from "lucide-react";
+import { Bell, ChevronDown, Copy, FileText, FileUp, LayoutTemplate, MoreHorizontal, NotebookPen, Pencil, Plus, Search, Settings, Trash2 } from "lucide-react";
 import { version } from "../../package.json";
 import type { WorkspaceEntry } from "../workspace/workspace";
 
@@ -16,6 +16,7 @@ export interface SidebarProps {
   onDuplicateCanvas: (id: string) => void;
   onDelete: (entry: WorkspaceEntry) => void;
   onShowUpdates: () => void;
+  onShowSettings: () => void;
   onImportMarkdown?: (file: File) => void;
   onSearch?: () => void;
 }
@@ -26,7 +27,7 @@ const sections = [
 ] as const;
 
 export function Sidebar({
-  entries, activeEntry, onCreate, onOpen, onRename, onDuplicateCanvas, onDelete, onShowUpdates, onImportMarkdown, onSearch,
+  entries, activeEntry, onCreate, onOpen, onRename, onDuplicateCanvas, onDelete, onShowUpdates, onShowSettings, onImportMarkdown, onSearch,
 }: SidebarProps) {
   const [menu, setMenu] = useState<string | null>(null);
   const [menuAbove, setMenuAbove] = useState(false);
@@ -144,11 +145,15 @@ export function Sidebar({
       ))}
     </nav>
     <footer className="sidebar-footer">
-      <button type="button" className="sidebar-updates" aria-haspopup="dialog" onClick={onShowUpdates}>
-        <Bell size={15} />
-        <span>更新公告</span>
-        <span className="sidebar-version">v{version}</span>
-      </button>
+      <div className="sidebar-footer-actions">
+        <button type="button" className="sidebar-updates" aria-haspopup="dialog" onClick={onShowUpdates}>
+          <Bell size={15} />
+          <span>更新公告</span>
+          <span className="sidebar-version">v{version}</span>
+        </button>
+        <button type="button" className="icon-button sidebar-settings" title="设置" aria-label="设置"
+          aria-haspopup="dialog" onClick={onShowSettings}><Settings size={16} /></button>
+      </div>
       <div className="sidebar-local"><span className="local-indicator" />本地工作区</div>
     </footer>
   </aside>;

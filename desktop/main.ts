@@ -3,7 +3,7 @@ import type { IpcMainInvokeEvent } from "electron";
 import { join } from "node:path";
 import { desktopChannels } from "../src/workspace/desktopWorkspace";
 import type { Workspace } from "../src/workspace/workspace";
-import { registerWindowShortcuts, toggleMaximized } from "./window";
+import { getZoomPercent, registerWindowShortcuts, setZoomPercent, toggleMaximized } from "./window";
 import { createWorkspaceStore } from "./workspaceStore";
 
 let mainWindow: BrowserWindow | null = null;
@@ -27,6 +27,8 @@ async function start(): Promise<void> {
     return store.saveWorkspace(workspace);
   });
   ipcMain.handle(desktopChannels.toggleMaximized, (event) => toggleMaximized(getSenderWindow(event)));
+  ipcMain.handle(desktopChannels.getZoomPercent, (event) => getZoomPercent(getSenderWindow(event)));
+  ipcMain.handle(desktopChannels.setZoomPercent, (event, percent: number) => setZoomPercent(getSenderWindow(event), percent));
 
   Menu.setApplicationMenu(null);
   const window = new BrowserWindow({
