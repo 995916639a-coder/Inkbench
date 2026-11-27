@@ -30,10 +30,10 @@
 
 ## 快速开始
 
-在 Ubuntu 或 Debian 的 x86_64 电脑上，从 GitHub Releases 的 Assets 下载 `inkbench_1.1.2_amd64.deb`，然后在安装包所在目录运行以下命令。安装完成后，从系统应用菜单打开 Inkbench。[下载安装包](https://github.com/995916639a-coder/Inkbench/releases/latest)
+在 Ubuntu 或 Debian 的 x86_64 电脑上，从 GitHub Releases 的 Assets 下载 `inkbench_1.1.3_amd64.deb`，然后在安装包所在目录运行以下命令。安装完成后，从系统应用菜单打开 Inkbench。[下载安装包](https://github.com/995916639a-coder/Inkbench/releases/latest)
 
 ```sh
-sudo apt install ./inkbench_1.1.2_amd64.deb
+sudo apt install ./inkbench_1.1.3_amd64.deb
 ```
 
 ### 开始记笔记
@@ -41,8 +41,10 @@ sudo apt install ./inkbench_1.1.2_amd64.deb
 1. 在侧栏点击「新建」，选择笔记或画布。
 2. 在笔记里直接输入文字，用正文上方的工具栏设置格式。
 3. 在画布底部选择「添加笔记」「文本」或「画笔」。拖动卡片顶部可以移动对象，滚轮可以缩放画布。
-4. 按 F11 或点击右上角按钮切换全屏。
+4. 桌面版启动时最大化并保留系统标题栏。按 F11 或点击应用右上角的窗口按钮可最大化或还原窗口。
 5. 点击工作台顶部的侧栏按钮，或按 `Ctrl+\\`，可以收起或展开文件列表。
+
+按 `Ctrl + +` 或 `Ctrl + =` 放大整个应用，`Ctrl + -` 缩小，`Ctrl + 0` 恢复到 100%。
 
 ### 导入 Markdown
 

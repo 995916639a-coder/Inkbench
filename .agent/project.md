@@ -2,7 +2,7 @@
 
 ## 项目和交付
 
-- Inkbench 是面向程序员的 Linux 本地笔记应用。桌面版使用 Electron，以 `.deb` 交付，启动即全屏。浏览器预览通过 Vite 复用 React 和 TypeScript 界面。可视化编辑器使用 Tiptap。
+- Inkbench 是面向程序员的 Linux 本地笔记应用。桌面版使用 Electron，以 `.deb` 交付，启动时最大化并保留系统标题栏。浏览器预览通过 Vite 复用 React 和 TypeScript 界面。可视化编辑器使用 Tiptap。
 - 工作区由 App 在本地管理。把笔记放到画布时复制标题和正文。思维导图支持 Markdown 生成和 PNG 导出。项目源码分析和其他内容的导出属于后续版本。
 - 支持导入本地 Markdown 文件，可创建笔记或独立的画布卡片。1.1.0 新增思维导图。
 
@@ -10,7 +10,7 @@
 
 | 位置 | 职责 |
 | --- | --- |
-| `desktop/` | Electron 的窗口、全屏和本地文件读写。 |
+| `desktop/` | Electron 的窗口、界面缩放快捷键和本地文件读写。 |
 | `index.html`、`src/main.tsx` | 桌面和浏览器共用的界面入口。 |
 | `src/app/` | 组合工作台、侧栏和页面，协调工作区保存。 |
 | `src/views/` | 笔记、画布和更新公告等页面及交互。 |

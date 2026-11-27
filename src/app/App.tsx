@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { Check, ChevronRight, CircleAlert, Focus, LayoutGrid, NotebookText, PanelLeftClose, PanelLeftOpen, X } from "lucide-react";
+import { Check, ChevronRight, CircleAlert, LayoutGrid, Maximize, NotebookText, PanelLeftClose, PanelLeftOpen, X } from "lucide-react";
 import { duplicateCanvas } from "../function/canvas-duplicate";
 import { createNote } from "../function/documents";
 import { importMarkdownFile } from "../function/markdown-import";
@@ -15,12 +15,12 @@ import { Sidebar } from "./Sidebar";
 export interface AppProps {
   storage: WorkspaceStorage;
   isPreview?: boolean;
-  toggleFullscreen?: () => Promise<boolean>;
+  toggleMaximized?: () => Promise<void>;
 }
 
 type SaveStatus = "saved" | "saving" | "failed";
 
-export function App({ storage, isPreview = false, toggleFullscreen }: AppProps) {
+export function App({ storage, isPreview = false, toggleMaximized }: AppProps) {
   const current = useRef<Workspace | null>(null);
   const saveNumber = useRef(0);
   const [workspace, setWorkspace] = useState<Workspace | null>(null);
@@ -189,11 +189,11 @@ export function App({ storage, isPreview = false, toggleFullscreen }: AppProps) 
                 {isPreview ? "预览模式" : saveStatus === "saving" ? "正在保存" : "已本地保存"}
               </span>
             ))}
-            {toggleFullscreen && <button type="button" className="icon-button fullscreen-button" title="切换全屏（F11）"
-              aria-label="切换全屏" onClick={() => {
+            {toggleMaximized && <button type="button" className="icon-button window-size-button" title="最大化或还原窗口（F11）"
+              aria-label="最大化或还原窗口" onClick={() => {
                 setAlert(null);
-                void toggleFullscreen().catch(() => setAlert("无法切换全屏"));
-              }}><Focus size={18} /></button>}
+                void toggleMaximized().catch(() => setAlert("无法调整窗口大小"));
+              }}><Maximize size={17} /></button>}
           </div>
         </header>
         {alert && <div className="workbench-alert" role="alert">

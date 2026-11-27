@@ -7,7 +7,7 @@
 | 文件 | 职责 |
 | --- | --- |
 | `index.html`、`src/main.tsx` | 提供共用的 HTML 入口并挂载 React。浏览器通过 Vite 打开，桌面版由 Electron 窗口加载。 |
-| `src/app/App.tsx` | `App` 接收工作区存储和可选的全屏切换回调，组装工作台并协调保存。 |
+| `src/app/App.tsx` | `App` 接收工作区存储和可选的窗口大小切换回调，组装工作台并协调保存。 |
 | `src/app/Sidebar.tsx` | `Sidebar` 接收条目和当前打开项，通过回调请求新建、打开、重命名或删除。 |
 | `src/views/notes/NotesView.tsx` | `NotesView` 接收笔记，通过 `onChange` 返回更新后的笔记。 |
 | `src/views/canvas/CanvasView.tsx` | `CanvasView` 接收画布和可选择的笔记，通过 `onChange` 返回更新后的画布。 |
@@ -44,8 +44,9 @@
 
 | 文件 | 职责 |
 | --- | --- |
-| `desktop/main.ts` | 创建全屏窗口，初始化工作区存储并处理桌面请求。 |
-| `desktop/preload.ts` | 将 `DesktopBridge` 提供给界面，用于加载、保存及切换全屏。 |
+| `desktop/main.ts` | 创建带系统标题栏的最大化窗口，初始化工作区存储并处理桌面请求。 |
+| `desktop/window.ts` | `registerWindowShortcuts(window)` 处理 F11 和界面缩放快捷键。界面缩放使用 Electron 的页面缩放，画布视口独立保存。 |
+| `desktop/preload.ts` | 将 `DesktopBridge` 提供给界面，用于加载、保存以及最大化或还原窗口。 |
 | `desktop/workspaceStore.ts` | `createWorkspaceStore(filePath)` 返回文件存储，在应用数据目录读写 `workspace.json`。保存时写入同目录临时文件，再替换正式文件。 |
 | `src/workspace/workspace.ts` | 定义 `Workspace`、`CanvasDocument` 和加载、保存接口。`createCanvas(id, title?)` 创建空白画布。 |
 | `src/workspace/desktopWorkspace.ts` | 定义桌面接口 `DesktopBridge`。桌面窗口通过 `window.inkbench` 提供该接口。 |
@@ -56,7 +57,7 @@
 | --- | --- | --- |
 | `loadWorkspace()` | `App` | 返回已保存的工作区。尚未创建工作区时返回 `null`，由工作台载入示例。 |
 | `saveWorkspace(workspace)` | `App` | 接收完整工作区，写入完成后返回。 |
-| `toggleFullscreen()` | `App` | 切换 Electron 窗口全屏状态，并返回切换后的状态。 |
+| `toggleMaximized()` | `App` | 通过桌面桥接请求最大化或还原窗口，与 F11 共用 Electron 主进程中的 `toggleMaximized(window)`。 |
 
 工作区记录数据版本、笔记、画布、当前打开条目以及侧栏是否收起。每张画布保存自己的视口。读取或保存失败会报告错误，界面保留当前内容并允许重试。写入按顺序完成，应用退出前会等待最后一次保存。若写入失败，退出窗口提供返回编辑的选项。
 
