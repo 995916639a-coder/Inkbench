@@ -24,10 +24,10 @@
 
 ### 安装 Linux 版
 
-在 Ubuntu 或 Debian 的 x86_64 电脑上，取得 `inkbench_1.1.1_amd64.deb` 后，在安装包所在目录运行以下命令。安装完成后，从系统应用菜单打开 Inkbench。
+在 Ubuntu 或 Debian 的 x86_64 电脑上，取得 `inkbench_1.1.2_amd64.deb` 后，在安装包所在目录运行以下命令。安装完成后，从系统应用菜单打开 Inkbench。
 
 ```sh
-sudo apt install ./inkbench_1.1.1_amd64.deb
+sudo apt install ./inkbench_1.1.2_amd64.deb
 ```
 
 ### 开始记笔记

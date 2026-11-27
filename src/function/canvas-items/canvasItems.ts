@@ -1,5 +1,5 @@
 import type { Note } from "../documents";
-import type { StrokePath } from "../drawing";
+import type { ArrowBend, StrokePath } from "../drawing";
 import type { Point } from "../viewport";
 
 type NoteSnapshot = Pick<Note, "title" | "content">;
@@ -22,6 +22,7 @@ export interface CanvasStroke {
   kind: "stroke";
   points: StrokePath;
   style?: "arrow";
+  bend?: ArrowBend;
 }
 
 export type CanvasItem = NoteCard | TextBox | CanvasStroke;
@@ -47,9 +48,9 @@ export function addStroke(
   items: readonly CanvasItem[],
   id: string,
   points: StrokePath,
-  style?: CanvasStroke["style"],
+  annotation?: { style: "arrow"; bend?: ArrowBend },
 ): CanvasItem[] {
-  return [...items, { id, kind: "stroke", points, ...(style ? { style } : {}) }];
+  return [...items, { id, kind: "stroke", points, ...annotation }];
 }
 
 export function moveCanvasItem(

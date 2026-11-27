@@ -199,6 +199,21 @@
   cursor: default;
 }
 .canvas-toolbar { bottom: 23px; left: 50%; transform: translateX(-50%); padding: 5px; }
+.canvas-arrow-options {
+  position: absolute;
+  bottom: calc(100% + 8px);
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 3px;
+  padding: 4px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--paper);
+  box-shadow: var(--popover-shadow);
+}
+.canvas-arrow-options .canvas-tool { width: auto; height: 30px; padding-inline: 8px; white-space: nowrap; }
+.canvas-arrow-options svg { fill: none; stroke: currentColor; stroke-width: 2.8; stroke-linecap: round; stroke-linejoin: round; }
 .canvas-tool {
   display: flex;
   align-items: center;

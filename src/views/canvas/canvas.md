@@ -22,7 +22,7 @@
 
 点击「自动整理导图」让主要分支向两侧展开。导图太大时优先显示一个可阅读的分支，点「显示全部节点」可切换到全图。也可以通过「撤销整理」恢复上一次位置。
 
-「箭头标注」位于画笔旁，选中后从箭尾拖到尖端即可。按 A 可切换到箭头工具。
+点画笔旁的「箭头标注」或按 A，在工具栏上方选「向左弯」或「向右弯」，再从箭尾拖到尖端。
 
 点选连线后使用「编辑连线」，可为关系写一个短名称。
 
@@ -37,7 +37,7 @@
 | 文件或入口 | 调用方 | 输入与效果 |
 | --- | --- | --- |
 | `CanvasView`，`CanvasView.tsx` | `App` | 接收 `canvas`、`notes`、`onChange` 和可选的 `revealNode`，展示并更新画布。 |
-| `CanvasToolbar`，`CanvasToolbar.tsx` | `CanvasView` | 接收工具、可选笔记和缩放比例，通过回调报告工具操作。笔记列表可用于放置卡片或生成导图。 |
+| `CanvasToolbar`，`CanvasToolbar.tsx` | `CanvasView` | 显示工具、两种箭头方向和可选笔记，通过回调报告选择和操作。 |
 | `CanvasItemsLayer`，`CanvasItemsLayer.tsx` | `CanvasView` | 显示卡片、文本框和笔迹，预览并显示画笔画出的弧线箭头。 |
 | `useCanvasGestures()`，`useCanvasGestures.ts` | `CanvasView` | 管理按下、移动、放开和取消期间的预览，完成后把坐标、尺寸、视口或笔迹交回画布。 |
 | `useMindMapHistory()`，`useMindMapHistory.ts` | `CanvasView` | 记录当前打开画布的导图操作，返回可撤销或重做的数据。连续输入会合并记录。 |

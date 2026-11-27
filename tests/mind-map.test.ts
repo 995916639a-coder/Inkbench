@@ -118,18 +118,40 @@ test("desktop storage loads older canvases and persists styled, labelled maps", 
   }
 });
 
-test("arrow annotations keep an open curved shape and undo as a single saved stroke", async () => {
+test("arrow bends mirror each other while keeping the same endpoints", () => {
+  const points = [{ x: 0, y: 0 }, { x: 150, y: 0 }] as const;
+  const left = annotationArrowPath(...points, "left");
+  const right = annotationArrowPath(...points, "right");
+  assert.equal(annotationArrowPath(...points), right);
+
+  const coordinates = (path: string) => path.split(" ").filter((value) => !/^[MCL]$/.test(value)).map(Number);
+  const leftCoordinates = coordinates(left);
+  const rightCoordinates = coordinates(right);
+  assert.equal(leftCoordinates.length, 14);
+  assert(leftCoordinates[3] < 0 && rightCoordinates[3] > 0);
+  // The two wings swap when reflected, so compare the shaft separately.
+  for (let index = 0; index < 8; index += 2) {
+    assert(Math.abs(leftCoordinates[index] - rightCoordinates[index]) < 0.0001);
+    assert(Math.abs(leftCoordinates[index + 1] + rightCoordinates[index + 1]) < 0.0001);
+  }
+  assert.match(left, /M .* L 150 0 L /);
+  assert.match(right, /M .* L 150 0 L /);
+});
+
+test("both arrow bends and older annotations save and undo as single strokes", async () => {
   const folder = await mkdtemp(join(tmpdir(), "inkbench-arrow-test-"));
   try {
     const points = [{ x: 0, y: 80 }, { x: 150, y: 10 }] as const;
-    const items = addStroke([], "arrow", points, "arrow");
-    assert.match(annotationArrowPath(...points), /^M .* C .* M .* L 150 10 L /);
+    const legacy = addStroke([], "legacy-arrow", points, { style: "arrow" });
+    const left = addStroke(legacy, "left-arrow", points, { style: "arrow", bend: "left" });
+    const items = addStroke(left, "right-arrow", points, { style: "arrow", bend: "right" });
     const canvas = { ...createCanvas("arrows"), items };
     const saved: Workspace = { version: 1, notes: [], canvases: [canvas], activeEntry: null };
     const store = createWorkspaceStore(join(folder, "workspace.json"));
     await store.saveWorkspace(saved);
     assert.deepEqual(await store.loadWorkspace(), saved);
-    assert.deepEqual(undoLastStroke(items), []);
+    assert.deepEqual(undoLastStroke(items), left);
+    assert.deepEqual(undoLastStroke(left), legacy);
   } finally {
     await rm(folder, { recursive: true, force: true });
   }

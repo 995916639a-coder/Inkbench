@@ -1,5 +1,7 @@
 import { ArrowLeft, ArrowUpRight, BookOpen, Circle, Download, FileUp, Focus, Hand, Link2, List, Minus, MousePointer2, Network, PenLine, Plus, RectangleHorizontal, Redo2, Rows3, Type, Undo2 } from "lucide-react";
 import type { Note } from "../../function/documents";
+import { annotationArrowPath } from "../../function/drawing";
+import type { ArrowBend } from "../../function/drawing";
 import type { MindMapShape } from "../../function/mind-map";
 import { minimumCanvasScale } from "../../function/viewport";
 
@@ -17,6 +19,8 @@ interface CanvasToolbarProps {
   canArrangeMindMap: boolean;
   undoMapLabel?: string;
   canRedoMap: boolean;
+  arrowBend: ArrowBend;
+  onArrowBend: (bend: ArrowBend) => void;
   onChooseTool: (tool: CanvasTool) => void;
   onMenuChange: (menu: CanvasMenu) => void;
   onChooseNote: (note: Note) => void;
@@ -46,6 +50,11 @@ const mapShapes = [
   { shape: "rectangle", label: "长方形节点", icon: RectangleHorizontal },
 ] as const;
 
+const arrowBends = [
+  { bend: "left", label: "向左弯" },
+  { bend: "right", label: "向右弯" },
+] as const;
+
 function NoteOptions({ notes, onChoose }: { notes: readonly Note[]; onChoose: (note: Note) => void }) {
   return notes.map((note) => (
     <button type="button" key={note.id} onClick={() => onChoose(note)}>
@@ -55,7 +64,8 @@ function NoteOptions({ notes, onChoose }: { notes: readonly Note[]; onChoose: (n
 }
 
 export function CanvasToolbar({
-  tool, scale, notes, menu, canUndo, hasMindMap, canArrangeMindMap, undoMapLabel, canRedoMap, onChooseTool, onMenuChange, onChooseNote,
+  tool, scale, notes, menu, canUndo, hasMindMap, canArrangeMindMap, undoMapLabel, canRedoMap, arrowBend, onArrowBend,
+  onChooseTool, onMenuChange, onChooseNote,
   onImportMarkdown, onImportMindMap, onGenerateFromNote, onFitMindMap, onShowMindMapOutline, onExportMindMap, onArrangeMindMap,
   onUndoMap, onRedoMap, onUndo, onZoom,
 }: CanvasToolbarProps) {
@@ -66,6 +76,15 @@ export function CanvasToolbar({
         title={`${label}（${shortcut}）`} aria-label={label} aria-pressed={tool === id} onClick={() => onChooseTool(id)}>
         <Icon size={18} strokeWidth={1.8} />
       </button>)}
+      {tool === "arrow" && menu === null && <div className="canvas-arrow-options" role="group" aria-label="箭头弧线方向">
+        {arrowBends.map(({ bend, label }) => <button className="canvas-tool" key={bend} type="button"
+          aria-pressed={arrowBend === bend} onClick={() => onArrowBend(bend)}>
+          <svg width="29" height="14" viewBox="0 0 54 26" aria-hidden="true">
+            <path d={annotationArrowPath({ x: 4, y: 13 }, { x: 49, y: 13 }, bend)} />
+          </svg>
+          {label}
+        </button>)}
+      </div>}
       <span className="canvas-tool-divider" />
       <div className="canvas-note-picker">
         <button type="button" className="canvas-tool note-picker-toggle" aria-expanded={menu === "notes"}

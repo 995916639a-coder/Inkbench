@@ -1,5 +1,6 @@
 import { useRef, useState } from "react";
 import type { PointerEvent } from "react";
+import type { ArrowBend } from "../../function/drawing";
 import { resizeMindMapNode } from "../../function/mind-map";
 import type { MindMapSize } from "../../function/mind-map";
 import { panViewport, screenToCanvas } from "../../function/viewport";
@@ -8,14 +9,14 @@ import type { CanvasViewport, Point } from "../../function/viewport";
 type GestureTarget =
   | { kind: "pan" }
   | { kind: "draw" }
-  | { kind: "arrow" }
+  | { kind: "arrow"; bend: ArrowBend }
   | { kind: "move"; id: string; target: "object" | "node"; position: Point }
   | { kind: "resize"; id: string; size: MindMapSize };
 
 type GestureChange =
   | { kind: "pan"; viewport: CanvasViewport }
   | { kind: "draw"; points: readonly Point[] }
-  | { kind: "arrow"; points: readonly [Point, Point] }
+  | { kind: "arrow"; points: readonly [Point, Point]; bend: ArrowBend }
   | { kind: "move"; id: string; target: "object" | "node"; position: Point }
   | { kind: "resize"; id: string; size: MindMapSize };
 
@@ -42,7 +43,9 @@ function changeAt(gesture: ActiveGesture, point: Point): GestureChange {
   const delta = { x: point.x - start.x, y: point.y - start.y };
   if (target.kind === "pan") return { kind: "pan", viewport: panViewport(viewport, delta) };
   if (target.kind === "draw") return { kind: "draw", points: [...gesture.points, screenToCanvas(point, viewport)] };
-  if (target.kind === "arrow") return { kind: "arrow", points: [screenToCanvas(start, viewport), screenToCanvas(point, viewport)] };
+  if (target.kind === "arrow") {
+    return { ...target, points: [screenToCanvas(start, viewport), screenToCanvas(point, viewport)] };
+  }
   const distance = { x: delta.x / viewport.scale, y: delta.y / viewport.scale };
   if (target.kind === "resize") return { ...target, size: resizeMindMapNode(target.size, distance) };
   return {

@@ -7,6 +7,7 @@ import {
 import { copyDocumentContent } from "../../function/documents";
 import type { Note } from "../../function/documents";
 import { finishStroke } from "../../function/drawing";
+import type { ArrowBend } from "../../function/drawing";
 import { importMarkdownFile } from "../../function/markdown-import";
 import {
   addMindMapChild, connectMindMapNodes, createMarkdownMindMap, createMindMapExample, createMindMapNode, emptyMindMap, mindMapBounds, mindMapShapes,
@@ -81,6 +82,7 @@ function isNodeInView(node: MindMapNode, viewport: CanvasViewport, area: HTMLEle
 
 export function CanvasView({ canvas, notes, onChange, revealNode }: CanvasViewProps) {
   const [tool, setTool] = useState<CanvasTool>("select");
+  const [arrowBend, setArrowBend] = useState<ArrowBend>("right");
   const [selected, setSelected] = useState<string | null>(null);
   const [editing, setEditing] = useState<string | null>(null);
   const [menu, setMenu] = useState<CanvasMenu>(null);
@@ -106,7 +108,7 @@ export function CanvasView({ canvas, notes, onChange, revealNode }: CanvasViewPr
       const stroke = finishStroke(change.points);
       if (stroke) onChange({ ...canvas, items: addStroke(canvas.items, crypto.randomUUID(), stroke) });
     } else if (change.kind === "arrow") {
-      onChange({ ...canvas, items: addStroke(canvas.items, crypto.randomUUID(), change.points, "arrow") });
+      onChange({ ...canvas, items: addStroke(canvas.items, crypto.randomUUID(), change.points, { style: "arrow", bend: change.bend }) });
     } else if (change.kind === "resize") {
       changeMindMap((map) => updateMindMapNode(map, change.id, { size: change.size }));
     } else if (change.target === "node") {
@@ -446,7 +448,7 @@ export function CanvasView({ canvas, notes, onChange, revealNode }: CanvasViewPr
         } else if (tool === "pen") {
           gestures.begin(event, { kind: "draw" });
         } else if (tool === "arrow") {
-          gestures.begin(event, { kind: "arrow" });
+          gestures.begin(event, { kind: "arrow", bend: arrowBend });
         } else if (tool === "connect") {
           if (!node) return;
           if (linkSource && node.id !== linkSource) {
@@ -526,7 +528,7 @@ export function CanvasView({ canvas, notes, onChange, revealNode }: CanvasViewPr
         <CanvasItemsLayer items={canvas.items} selected={selected} editing={editing} allowDoubleClickEdit={tool === "select"}
           movePreview={draft?.kind === "move" && draft.target === "object" ? draft : undefined}
           strokePreview={draft?.kind === "draw" ? draft.points : undefined}
-          arrowPreview={draft?.kind === "arrow" ? draft.points : undefined}
+          arrowPreview={draft?.kind === "arrow" ? draft : undefined}
           onEdit={(id, active) => { setSelected(id); setEditing(active ? id : null); }}
           onRemove={removeObject}
           onNoteChange={(id, note) => onChange({ ...canvas, items: updateNoteCard(canvas.items, id, note) })}
@@ -574,6 +576,7 @@ export function CanvasView({ canvas, notes, onChange, revealNode }: CanvasViewPr
         }} />
       <div className="canvas-hint"><Hand size={14} /> 中键拖动画布 <span>·</span> 滚轮缩放</div>
       <CanvasToolbar tool={tool} scale={viewport.scale} menu={menu} notes={notes}
+        arrowBend={arrowBend} onArrowBend={setArrowBend}
         canUndo={canUndo} hasMindMap={map.nodes.length > 0} canArrangeMindMap={map.nodes.length > 1}
         undoMapLabel={history.canUndo ? history.lastAction === "layout" ? "撤销整理" : "撤销导图操作" : undefined}
         canRedoMap={history.canRedo} onChooseTool={chooseTool} onMenuChange={setMenu}
