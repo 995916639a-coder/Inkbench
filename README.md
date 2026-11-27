@@ -46,6 +46,8 @@ sudo apt install ./inkbench_1.1.3_amd64.deb
 
 按 `Ctrl + +` 或 `Ctrl + =` 放大整个应用，`Ctrl + -` 缩小，`Ctrl + 0` 恢复到 100%。
 
+在侧栏的条目菜单里选择「重命名」。输入后点击输入框外或按 Enter 保存，按 Esc 取消。
+
 ### 导入 Markdown
 
 - 导入为笔记时，点击「新建 → 导入 Markdown」选择文件。

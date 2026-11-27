@@ -33,6 +33,7 @@ export function Sidebar({
   const [renaming, setRenaming] = useState<string | null>(null);
   const aside = useRef<HTMLElement>(null);
   const markdownInput = useRef<HTMLInputElement>(null);
+  const renameInput = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (!menu) return;
@@ -43,6 +44,16 @@ export function Sidebar({
     window.addEventListener("pointerdown", dismiss);
     return () => window.removeEventListener("pointerdown", dismiss);
   }, [menu]);
+
+  useEffect(() => {
+    if (!renaming) return;
+    function finishOnOutsideClick(event: PointerEvent) {
+      const input = renameInput.current;
+      if (event.button === 0 && input && event.target !== input) input.blur();
+    }
+    window.addEventListener("pointerdown", finishOnOutsideClick, true);
+    return () => window.removeEventListener("pointerdown", finishOnOutsideClick, true);
+  }, [renaming]);
 
   return <aside className="sidebar" ref={aside} aria-label="工作区文件"
     onKeyDown={(event) => { if (event.key === "Escape") setMenu(null); }}>
@@ -88,14 +99,21 @@ export function Sidebar({
             const active = activeEntry?.id === entry.id && activeEntry.kind === entry.kind;
             const title = entry.title || `未命名${label}`;
             return <div className={`file-row${active ? " is-active" : ""}`} key={entry.id}>
-              {renaming === entry.id ? <form className="file-rename" onSubmit={(event) => {
-                event.preventDefault();
-                const title = String(new FormData(event.currentTarget).get("title") ?? "").trim();
-                if (title) onRename(entry, title);
-                setRenaming(null);
-              }}><Icon size={16} /><input name="title" aria-label="新名称" defaultValue={title} autoFocus
-                onFocus={(event) => event.currentTarget.select()} onBlur={() => setRenaming(null)}
-                onKeyDown={(event) => { if (event.key === "Escape") setRenaming(null); }} /></form>
+              {renaming === entry.id ? <div className="file-rename">
+                <Icon size={16} />
+                <input ref={renameInput} aria-label="新名称" defaultValue={title} autoFocus
+                  onFocus={(event) => event.currentTarget.select()} onBlur={(event) => {
+                    const nextTitle = event.currentTarget.value.trim();
+                    if (nextTitle && nextTitle !== title) onRename(entry, nextTitle);
+                    setRenaming(null);
+                  }}
+                  onKeyDown={(event) => {
+                    if (event.nativeEvent.isComposing || (event.key !== "Enter" && event.key !== "Escape")) return;
+                    event.preventDefault();
+                    if (event.key === "Escape") event.currentTarget.value = title;
+                    event.currentTarget.blur();
+                  }} />
+              </div>
                 : <>
                   <button className="file-open" type="button" aria-current={active ? "page" : undefined} title={title}
                     onClick={() => { setMenu(null); onOpen(entry); }}><Icon size={16} /><span>{title}</span></button>
