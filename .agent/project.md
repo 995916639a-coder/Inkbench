@@ -30,6 +30,6 @@
 - 修改或新增 `function/` 能力与 `views/` 页面时，同步更新各自的 Markdown 说明。实现细节和维护记录写在对应的项目文档中。
 - `README.md` 面向外部用户，只放项目简介、界面预览、功能介绍和使用方法。
 - 初始开发顺序为需求与架构文档、CI/CD 方案、仓库上传、文件骨架、关键接口审阅、功能实现。用户要求分阶段审阅时，等该阶段通过后继续。
-- 使用 Node.js 24 和 npm。验证运行 `npm ci`、`npm run typecheck`、`npm test` 和 `npm run build`。涉及打包时运行 `npm run package:linux`。GitHub Actions 在 Linux 上运行检查，安装包在本机生成。
+- 使用 Node.js 24 和 npm。验证运行 `npm ci`、`npm run typecheck`、`npm test` 和 `npm run build`。涉及打包时运行 `npm run package:linux`。GitHub Actions 检查通过后会为 `main` 的每次推送打包 `.deb`，安装包可从对应运行的 Artifacts 下载。
 
 详细说明见 [首版需求](../docs/requirements.md)、[架构设计](../docs/architecture.md) 和 [CI/CD](../docs/ci-cd.md)。

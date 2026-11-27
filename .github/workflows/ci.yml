@@ -21,4 +21,22 @@ jobs:
       - run: npm ci
       - run: npm run typecheck
       - run: npm test
-      - run: npm run build
+      - name: Build for pull request
+        if: github.event_name == 'pull_request'
+        run: npm run build
+      - name: Install Linux packaging tools
+        if: github.event_name == 'push'
+        run: |
+          sudo apt-get update
+          sudo apt-get install --yes --no-install-recommends fakeroot
+      - name: Package Linux installer
+        if: github.event_name == 'push'
+        run: npm run package:linux -- --x64 --publish never
+      - name: Upload Linux installer
+        if: github.event_name == 'push'
+        uses: actions/upload-artifact@v7
+        with:
+          name: inkbench-linux-amd64
+          path: release/inkbench_*_amd64.deb
+          if-no-files-found: error
+          compression-level: 0
