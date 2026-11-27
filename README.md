@@ -2,11 +2,27 @@
 
 ## 项目简介
 
+在AI如此强大的今天，梳理代码仓库和层级调用思路的能力同样重要！
+
 墨栈是一款为程序员设计的 Linux 本地笔记应用。你可以在一篇笔记里记录排查步骤和代码，也可以把几篇笔记摆到同一张画布上，配上文字和手绘标注。
 
 ## 界面预览
 
-<!-- 在此添加界面截图和演示视频。 -->
+### 可视化笔记
+
+用标题、列表和高亮代码块整理 ripgrep 的常用命令。
+
+![墨栈笔记编辑器展示 ripgrep 命令、代码高亮和选项说明](docs/media/inkbench-notes.png)
+
+### 自由画布
+
+打开内置的「API 联调画布」，在同一张画布上查看接口笔记、待确认事项和模拟环境配置。
+
+![墨栈内置 API 联调画布，包含设备接口笔记、两个文本框和手绘箭头](docs/media/inkbench-api-canvas.png)
+
+### 思维导图操作演示
+
+视频使用根据 REA 公开文档整理的 Markdown 提纲，用模拟鼠标演示导入生成 37 个节点的导图、搜索「证据记录」，再将节点改为「分析证据」。[观看操作视频（约 17 秒）](docs/media/inkbench-mind-map-demo.mp4?raw=true) · [REA 公开文档](https://github.com/morluto/rea/tree/main/docs)
 
 ## 功能介绍
 
@@ -24,7 +40,7 @@
 
 ### 安装 Linux 版
 
-在 Ubuntu 或 Debian 的 x86_64 电脑上，取得 `inkbench_1.1.2_amd64.deb` 后，在安装包所在目录运行以下命令。安装完成后，从系统应用菜单打开 Inkbench。
+在 Ubuntu 或 Debian 的 x86_64 电脑上，从 GitHub Releases 的 Assets 下载 `inkbench_1.1.2_amd64.deb`，然后在安装包所在目录运行以下命令。安装完成后，从系统应用菜单打开 Inkbench。[下载安装包](https://github.com/995916639a-coder/Inkbench/releases/latest)
 
 ```sh
 sudo apt install ./inkbench_1.1.2_amd64.deb
