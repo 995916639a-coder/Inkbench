@@ -30,10 +30,10 @@
 
 ## 快速开始
 
-在 Ubuntu 或 Debian 的 x86_64 电脑上，从 GitHub Releases 的 Assets 下载 `inkbench_1.2.0_amd64.deb`，然后在安装包所在目录运行以下命令。安装完成后，从系统应用菜单打开 Inkbench。[下载安装包](https://github.com/995916639a-coder/Inkbench/releases/latest)
+在 Ubuntu 或 Debian 的 x86_64 电脑上，从 GitHub Releases 的 Assets 下载 `inkbench_1.2.1_amd64.deb`，然后在安装包所在目录运行以下命令。安装完成后，从系统应用菜单打开 Inkbench。[下载安装包](https://github.com/995916639a-coder/Inkbench/releases/latest)
 
 ```sh
-sudo apt install ./inkbench_1.2.0_amd64.deb
+sudo apt install ./inkbench_1.2.1_amd64.deb
 ```
 
 ### 开始记笔记
@@ -58,11 +58,11 @@ sudo apt install ./inkbench_1.2.0_amd64.deb
 
 导入使用 UTF-8 编码，保留标题、列表和代码块等常用格式。表格、图片语法和 HTML 会保留为可编辑文本。
 
-### 离线翻译
+### 思维导图离线翻译
 
-- 在桌面版点击笔记标题旁的翻译图标，或选择「思维导图 → 翻译导图」。
-- 首次选择「中文 → 英文」或「英文 → 中文」，点击「离线翻译」。译文直接显示在当前条目。之后从同一入口切换中英文，回到原语言时恢复原文。
-- 笔记保留代码块、行内代码和链接地址。导图保留节点位置、连线和配色。中英模型随安装包交付，首次使用即可离线翻译。
+- 在桌面版选择「思维导图 → 翻译导图」。
+- 首次选择「中文 → 英文」或「英文 → 中文」，点击「离线翻译」。译文直接显示在当前导图，之后可从同一菜单切换中英文。
+- 节点位置、连线和配色会保留。中英模型随安装包交付，首次使用即可离线翻译。
 
 ## 功能介绍
 

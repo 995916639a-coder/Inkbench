@@ -1,34 +1,26 @@
 import { useEffect, useRef, useState } from "react";
 import { Languages, X } from "lucide-react";
-import type { Note } from "../../function/documents";
-import {
-  documentLanguageSample, isTranslationDirection, suggestedDirection, translateMindMap, translateNote,
-} from "../../function/note-translation";
-import type { TranslationDirection } from "../../function/note-translation";
+import type { MindMap } from "../../function/mind-map";
+import { isTranslationDirection, suggestedDirection, translateMindMap } from "../../function/mind-map-translation";
+import type { TranslationDirection } from "../../function/mind-map-translation";
 import { useTranslation } from "../../i18n";
 import type { DesktopTranslation } from "../../workspace/desktopWorkspace";
-import type { CanvasDocument } from "../../workspace/workspace";
 import "./translation.css";
 
-export type TranslationSource = { kind: "note"; note: Note }
-  | { kind: "canvas"; canvas: CanvasDocument };
-
 interface TranslationDialogProps {
-  source: TranslationSource;
+  map: MindMap;
   engine: DesktopTranslation;
-  onApply: (result: TranslationSource, direction: TranslationDirection) => boolean;
+  onApply: (result: MindMap, direction: TranslationDirection) => boolean;
   onClose: () => void;
 }
 
-export function TranslationDialog({ source, engine, onApply, onClose }: TranslationDialogProps) {
+export function TranslationDialog({ map, engine, onApply, onClose }: TranslationDialogProps) {
   const { t } = useTranslation();
   const dialog = useRef<HTMLDialogElement>(null);
   const running = useRef(false);
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
-  const [direction, setDirection] = useState(() => suggestedDirection(source.kind === "note"
-    ? documentLanguageSample(source.note.content) || source.note.title
-    : source.canvas.mindMap?.nodes.map((node) => node.text).join(" ") ?? ""));
+  const [direction, setDirection] = useState(() => suggestedDirection(map.nodes.map((node) => node.text).join(" ")));
 
   useEffect(() => { dialog.current?.showModal(); }, []);
 
@@ -38,14 +30,7 @@ export function TranslationDialog({ source, engine, onApply, onClose }: Translat
     setMessage(null);
     setBusy(true);
     try {
-      let result: TranslationSource | null = null;
-      if (source.kind === "note") {
-        const note = await translateNote(source.note, direction, engine.translate);
-        if (note) result = { kind: "note", note: { ...source.note, ...note } };
-      } else if (source.canvas.mindMap) {
-        const map = await translateMindMap(source.canvas.mindMap, direction, engine.translate);
-        if (map) result = { kind: "canvas", canvas: { ...source.canvas, mindMap: map } };
-      }
+      const result = await translateMindMap(map, direction, engine.translate);
       if (!running.current) return;
       if (!result) setMessage("没有找到当前方向可翻译的文字。");
       else if (!onApply(result, direction)) setMessage("原内容已变更。请关闭后重新翻译。");
@@ -67,7 +52,7 @@ export function TranslationDialog({ source, engine, onApply, onClose }: Translat
 
   return <dialog ref={dialog} className="translation-dialog" aria-labelledby="translation-title" onClose={close}>
     <header className="translation-header">
-      <h1 id="translation-title"><Languages size={19} />{t(source.kind === "note" ? "翻译笔记" : "翻译导图")}</h1>
+      <h1 id="translation-title"><Languages size={19} />{t("翻译导图")}</h1>
       <button type="button" className="icon-button" aria-label={t("关闭翻译")} onClick={() => dialog.current?.close()}><X size={17} /></button>
     </header>
     <div className="translation-body">

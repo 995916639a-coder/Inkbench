@@ -1,4 +1,3 @@
-import type { DocumentContent, DocumentNode, Note } from "../documents";
 import type { MindMap } from "../mind-map";
 
 export type TranslationDirection = "en-zh" | "zh-en";
@@ -60,61 +59,6 @@ function translationPlan(direction: TranslationDirection) {
       return true;
     },
   };
-}
-
-export async function translateNote(
-  note: Pick<Note, "title" | "content">,
-  direction: TranslationDirection,
-  translate: TranslateText,
-): Promise<Pick<Note, "title" | "content"> | null> {
-  const plan = translationPlan(direction);
-  const title = plan.prepare(note.title);
-  const content = structuredClone(note.content);
-  const changed = new Set<DocumentNode>();
-  const update: (() => void)[] = [];
-  function visit(node: DocumentNode) {
-    if (node.type === "codeBlock") return;
-    if (node.type === "text" && node.text && !node.marks?.some(({ type }) => type === "code")) {
-      const translated = plan.prepare(node.text);
-      update.push(() => {
-        const text = translated();
-        if (text !== node.text) changed.add(node);
-        node.text = text;
-      });
-    }
-    node.content?.forEach(visit);
-  }
-  visit(content);
-  if (!await plan.run(translate)) return null;
-  update.forEach((apply) => apply());
-  if (direction === "zh-en") spaceEnglishRuns(content, changed);
-  return { title: title(), content };
-}
-
-function spaceEnglishRuns(node: DocumentNode, changed: ReadonlySet<DocumentNode>) {
-  if (!node.content || node.type === "codeBlock") return;
-  node.content = node.content.flatMap((child, index, siblings) => {
-    spaceEnglishRuns(child, changed);
-    const previous = siblings[index - 1];
-    if (previous?.text && child.text && (changed.has(child) || changed.has(previous))
-      && /[A-Za-z0-9]$/.test(previous.text) && /^[A-Za-z0-9]/.test(child.text)) {
-      return [{ type: "text", text: " " }, child];
-    }
-    return [child];
-  });
-}
-
-export function documentLanguageSample(content: DocumentContent): string {
-  const text: string[] = [];
-  function visit(node: DocumentNode) {
-    if (node.type === "codeBlock" || text.length >= 12) return;
-    if (node.type === "text" && node.text && !node.marks?.some(({ type }) => type === "code")) {
-      text.push(node.text.slice(0, 300));
-    }
-    node.content?.forEach(visit);
-  }
-  visit(content);
-  return text.join(" ");
 }
 
 export async function translateMindMap(map: MindMap, direction: TranslationDirection, translate: TranslateText): Promise<MindMap | null> {

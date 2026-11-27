@@ -1,7 +1,7 @@
 import type { CanvasItem } from "../function/canvas-items";
 import type { Note } from "../function/documents";
 import type { MindMap } from "../function/mind-map";
-import type { LanguageVersions, MindMapLabels } from "../function/note-translation";
+import type { LanguageVersions, MindMapLabels } from "../function/mind-map-translation";
 import type { CanvasViewport } from "../function/viewport";
 
 export interface CanvasDocument {

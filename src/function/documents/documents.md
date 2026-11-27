@@ -11,3 +11,4 @@
 | --- | --- | --- | --- |
 | `createNote(id, title?)` | `App` | 工作台分配的笔记 ID 和可选标题 | 含标题和空白正文的 `Note` |
 | `copyDocumentContent(content)` | `CanvasView` | 笔记的结构化正文 `DocumentContent` | 可独立编辑的深拷贝 |
+| `switchSavedNoteLanguage(note)` | `NotesView` | 1.2.0 已保存两个语言版本的笔记 | 交换当前与备用版本的标题和正文 |
