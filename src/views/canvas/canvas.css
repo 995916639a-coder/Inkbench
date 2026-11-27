@@ -48,7 +48,8 @@
 .canvas-stage:focus-visible { box-shadow: inset 0 0 0 1px #9ab29d; }
 .tool-hand, .tool-hand .canvas-object { cursor: grab; }
 .is-panning, .is-panning .canvas-object { cursor: grabbing; }
-.tool-pen, .tool-pen .canvas-object, .tool-text, .tool-placing, .tool-ellipse, .tool-rectangle, .tool-connect { cursor: crosshair; }
+.tool-pen, .tool-pen .canvas-object, .tool-arrow, .tool-arrow .canvas-object,
+.tool-text, .tool-placing, .tool-ellipse, .tool-rectangle, .tool-connect { cursor: crosshair; }
 .canvas-world { position: absolute; top: 50%; left: 50%; transform-origin: 0 0; }
 .canvas-strokes {
   position: absolute;
@@ -61,7 +62,8 @@
   pointer-events: none;
   fill: #507b63;
 }
-.canvas-strokes polyline { fill: none; stroke: #507b63; stroke-width: 2.8; stroke-linecap: round; stroke-linejoin: round; }
+.canvas-strokes :is(polyline, .canvas-arrow) { fill: none; stroke: #507b63; stroke-width: 2.8; stroke-linecap: round; stroke-linejoin: round; }
+.canvas-strokes .draft-arrow { opacity: .7; }
 .canvas-object {
   position: absolute;
   border-radius: 11px;

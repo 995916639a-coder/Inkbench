@@ -4,10 +4,12 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { test } from "node:test";
 import { createWorkspaceStore } from "../desktop/workspaceStore";
+import { addStroke, undoLastStroke } from "../src/function/canvas-items";
+import { annotationArrowPath } from "../src/function/drawing";
 import { importMarkdownFile } from "../src/function/markdown-import";
 import {
   addMindMapChild, connectMindMapNodes, createMarkdownMindMap, createMindMapNode,
-  organizeMindMap, removeMindMapElement, updateMindMapEdgeLabel,
+  mindMapBounds, mindMapEdgeRoute, mindMapHierarchy, organizeMindMap, removeMindMapElement, updateMindMapEdgeLabel,
 } from "../src/function/mind-map";
 import type { MindMap } from "../src/function/mind-map";
 import { createCanvas } from "../src/workspace/workspace";
@@ -60,6 +62,41 @@ test("layout keeps cycles and leaves room for different node sizes", () => {
   assert(map.nodes.every(({ position }) => position.x === 0 && position.y === 0));
 });
 
+test("Markdown with a long list uses both sides and retains the title above the heading", async () => {
+  const items = Array.from({ length: 60 }, (_, index) => `- 条目 ${index + 1}`).join("\n");
+  const note = await importMarkdownFile(new File([`# 主要内容\n\n${items}`], "说明.md"));
+  let next = 0;
+  const map = createMarkdownMindMap(note, { x: 10, y: 20 }, () => String(++next));
+  const [root, heading, ...leaves] = map.nodes;
+  const bounds = mindMapBounds(map.nodes)!;
+  assert.equal(bounds.left, 10);
+  assert.equal(bounds.top, 20);
+  assert.equal(map.edges.length, 61);
+  assert.equal(root.position.x, heading.position.x);
+  assert(root.position.y < heading.position.y);
+  assert.equal(leaves.filter((node) => node.position.x < heading.position.x).length, 30);
+  assert.equal(leaves.filter((node) => node.position.x > heading.position.x).length, 30);
+  assert(bounds.bottom - bounds.top < 4000);
+  assert.deepEqual(organizeMindMap(map), map);
+});
+
+test("connections meet node sides with smooth tangents and taper by hierarchy", () => {
+  const from = createMindMapNode("root", "ellipse", { x: 100, y: 0 });
+  const to = createMindMapNode("child", "rectangle", { x: 400, y: 280 });
+  const leaf = createMindMapNode("leaf", "rectangle", { x: 680, y: 330 });
+  const map: MindMap = { nodes: [leaf, to, from], edges: [
+    { id: "first", from: from.id, to: to.id }, { id: "second", from: to.id, to: leaf.id },
+  ] };
+  const { depthById } = mindMapHierarchy(map);
+  const main = mindMapEdgeRoute(from, to, depthById.get(from.id));
+  const branch = mindMapEdgeRoute(to, leaf, depthById.get(to.id));
+  assert.equal(main.start.x, from.position.x + from.size.width);
+  assert.equal(main.end.x, to.position.x);
+  assert.equal(main.firstControl.y, main.start.y);
+  assert.equal(main.lastControl.y, main.end.y);
+  assert(main.width > branch.width);
+});
+
 test("desktop storage loads older canvases and persists styled, labelled maps", async () => {
   const folder = await mkdtemp(join(tmpdir(), "inkbench-workspace-test-"));
   try {
@@ -76,6 +113,23 @@ test("desktop storage loads older canvases and persists styled, labelled maps", 
     await store.saveWorkspace(saved);
     await store.flush();
     assert.deepEqual(await createWorkspaceStore(target).loadWorkspace(), saved);
+  } finally {
+    await rm(folder, { recursive: true, force: true });
+  }
+});
+
+test("arrow annotations keep an open curved shape and undo as a single saved stroke", async () => {
+  const folder = await mkdtemp(join(tmpdir(), "inkbench-arrow-test-"));
+  try {
+    const points = [{ x: 0, y: 80 }, { x: 150, y: 10 }] as const;
+    const items = addStroke([], "arrow", points, "arrow");
+    assert.match(annotationArrowPath(...points), /^M .* C .* M .* L 150 10 L /);
+    const canvas = { ...createCanvas("arrows"), items };
+    const saved: Workspace = { version: 1, notes: [], canvases: [canvas], activeEntry: null };
+    const store = createWorkspaceStore(join(folder, "workspace.json"));
+    await store.saveWorkspace(saved);
+    assert.deepEqual(await store.loadWorkspace(), saved);
+    assert.deepEqual(undoLastStroke(items), []);
   } finally {
     await rm(folder, { recursive: true, force: true });
   }

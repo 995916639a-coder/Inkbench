@@ -29,7 +29,8 @@ function hasDocument(value: Record<string, unknown>): boolean {
 function isCanvasItem(value: unknown): boolean {
   if (!isRecord(value) || typeof value.id !== "string") return false;
   if (value.kind === "stroke") {
-    return Array.isArray(value.points) && value.points.length > 0 && value.points.every(isPoint);
+    return Array.isArray(value.points) && value.points.length > 0 && value.points.every(isPoint)
+      && (value.style === undefined || value.style === "arrow" && value.points.length === 2);
   }
   if (!isPoint(value.position)) return false;
   if (value.kind === "note-card") return hasDocument(value);

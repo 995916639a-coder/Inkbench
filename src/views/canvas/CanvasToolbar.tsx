@@ -1,9 +1,9 @@
-import { ArrowLeft, BookOpen, Circle, Download, FileUp, Focus, Hand, Link2, List, Minus, MousePointer2, Network, PenLine, Plus, RectangleHorizontal, Redo2, Rows3, Type, Undo2 } from "lucide-react";
+import { ArrowLeft, ArrowUpRight, BookOpen, Circle, Download, FileUp, Focus, Hand, Link2, List, Minus, MousePointer2, Network, PenLine, Plus, RectangleHorizontal, Redo2, Rows3, Type, Undo2 } from "lucide-react";
 import type { Note } from "../../function/documents";
 import type { MindMapShape } from "../../function/mind-map";
 import { minimumCanvasScale } from "../../function/viewport";
 
-export type CanvasTool = "select" | "hand" | "text" | "pen" | MindMapShape | "connect";
+export type CanvasTool = "select" | "hand" | "text" | "pen" | "arrow" | MindMapShape | "connect";
 export const mindMapDragType = "application/x-inkbench-mind-map-shape";
 export type CanvasMenu = "notes" | "mind-map" | "map-notes" | null;
 
@@ -38,6 +38,7 @@ const tools = [
   { id: "hand", label: "平移", shortcut: "H", icon: Hand },
   { id: "text", label: "文本", shortcut: "T", icon: Type },
   { id: "pen", label: "画笔", shortcut: "B", icon: PenLine },
+  { id: "arrow", label: "箭头标注", shortcut: "A", icon: ArrowUpRight },
 ] as const;
 
 const mapShapes = [

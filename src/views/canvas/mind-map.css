@@ -5,8 +5,9 @@
   overflow: visible;
   pointer-events: none;
 }
-.mind-map-edge { stroke: #769584; stroke-width: 2; }
-.mind-map-edges .is-selected .mind-map-edge { stroke: var(--green); stroke-width: 3; }
+.mind-map-edge { fill: none; stroke-linecap: round; }
+.mind-map-edge-target { fill: none; }
+.mind-map-edges .is-selected .mind-map-edge { stroke: var(--green); }
 .tool-select .mind-map-edge-target { stroke: transparent; stroke-width: 14; pointer-events: stroke; cursor: pointer; }
 .mind-map-edge-label {
   fill: #486857;
@@ -84,7 +85,7 @@
 .tool-connect .mind-map-node { cursor: crosshair; }
 .tool-hand .mind-map-node { cursor: grab; }
 .is-panning .mind-map-node { cursor: grabbing; }
-.tool-pen .mind-map-node { cursor: crosshair; }
+.tool-pen .mind-map-node, .tool-arrow .mind-map-node { cursor: crosshair; }
 .note-picker-menu.mind-map-menu { max-height: min(375px, 59vh); }
 .mind-map-menu button[draggable] { cursor: grab; }
 .mind-map-menu button[draggable]:active { cursor: grabbing; }

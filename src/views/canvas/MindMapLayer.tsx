@@ -1,12 +1,14 @@
 import { useState } from "react";
 import type { CSSProperties } from "react";
 import { Circle, Palette, Plus, RectangleHorizontal } from "lucide-react";
-import { mindMapEdgeLabel, mindMapEdgePoints, mindMapNodeAppearance, mindMapTones, resizeMindMapNode } from "../../function/mind-map";
+import { curvePath } from "../../function/drawing";
+import { mindMapEdgeLabel, mindMapEdgeRoute, mindMapNodeAppearance, mindMapTones, resizeMindMapNode } from "../../function/mind-map";
 import type { MindMap, MindMapEdge, MindMapNode, MindMapSize, MindMapTone } from "../../function/mind-map";
 import "./mind-map.css";
 
 interface MindMapLayerProps {
   map: MindMap;
+  depthById: ReadonlyMap<string, number>;
   selected: string | null;
   editing: string | null;
   linkSource: string | null;
@@ -16,7 +18,7 @@ interface MindMapLayerProps {
   onTextChange: (id: string, text: string) => void;
 }
 
-export function MindMapLayer({ map, selected, editing, linkSource, onEdit, onResize, onFinishEdit, onTextChange }: MindMapLayerProps) {
+export function MindMapLayer({ map, depthById, selected, editing, linkSource, onEdit, onResize, onFinishEdit, onTextChange }: MindMapLayerProps) {
   const nodes = new Map(map.nodes.map((node) => [node.id, node]));
 
   return <>
@@ -25,12 +27,13 @@ export function MindMapLayer({ map, selected, editing, linkSource, onEdit, onRes
         const from = nodes.get(edge.from);
         const to = nodes.get(edge.to);
         if (!from || !to) return null;
-        const { start, end, labelPoint } = mindMapEdgePoints(from, to);
-        const line = { x1: start.x, y1: start.y, x2: end.x, y2: end.y };
+        const route = mindMapEdgeRoute(from, to, depthById.get(from.id));
+        const d = curvePath(route);
+        const { labelPoint } = route;
         const label = mindMapEdgeLabel(edge);
         return <g key={edge.id} className={selected === edge.id ? "is-selected" : undefined}>
-          <line {...line} className="mind-map-edge" />
-          <line {...line} className="mind-map-edge-target" data-map-edge={edge.id} />
+          <path d={d} stroke={route.color} strokeWidth={route.width} className="mind-map-edge" />
+          <path d={d} className="mind-map-edge-target" data-map-edge={edge.id} />
           {label && <text x={labelPoint.x} y={labelPoint.y} textAnchor="middle"
             className="mind-map-edge-label" data-map-edge={edge.id}><title>{edge.label}</title>{label}</text>}
         </g>;

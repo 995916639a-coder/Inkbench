@@ -21,6 +21,7 @@ export interface CanvasStroke {
   id: string;
   kind: "stroke";
   points: StrokePath;
+  style?: "arrow";
 }
 
 export type CanvasItem = NoteCard | TextBox | CanvasStroke;
@@ -46,8 +47,9 @@ export function addStroke(
   items: readonly CanvasItem[],
   id: string,
   points: StrokePath,
+  style?: CanvasStroke["style"],
 ): CanvasItem[] {
-  return [...items, { id, kind: "stroke", points }];
+  return [...items, { id, kind: "stroke", points, ...(style ? { style } : {}) }];
 }
 
 export function moveCanvasItem(

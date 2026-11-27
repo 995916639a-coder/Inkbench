@@ -1,6 +1,7 @@
 import { Layers, Pencil, Trash2 } from "lucide-react";
 import { RichTextEditor } from "../../editor/RichTextEditor";
 import type { CanvasItem, NoteCard } from "../../function/canvas-items";
+import { annotationArrowPath } from "../../function/drawing";
 import type { Point } from "../../function/viewport";
 
 interface CanvasItemsLayerProps {
@@ -10,6 +11,7 @@ interface CanvasItemsLayerProps {
   allowDoubleClickEdit: boolean;
   movePreview?: { id: string; position: Point };
   strokePreview?: readonly Point[];
+  arrowPreview?: readonly [Point, Point];
   onEdit: (id: string, editing: boolean) => void;
   onRemove: (id: string) => void;
   onNoteChange: (id: string, note: Pick<NoteCard, "title" | "content">) => void;
@@ -23,7 +25,7 @@ function Stroke({ points, draft = false }: { points: readonly Point[]; draft?: b
 }
 
 export function CanvasItemsLayer({
-  items, selected, editing, allowDoubleClickEdit, movePreview, strokePreview, onEdit, onRemove, onNoteChange, onTextChange,
+  items, selected, editing, allowDoubleClickEdit, movePreview, strokePreview, arrowPreview, onEdit, onRemove, onNoteChange, onTextChange,
 }: CanvasItemsLayerProps) {
   return <>
     {items.map((item) => {
@@ -67,8 +69,15 @@ export function CanvasItemsLayer({
       </article>;
     })}
     <svg className="canvas-strokes" aria-hidden="true">
-      {items.map((item) => item.kind === "stroke" && <Stroke key={item.id} points={item.points} />)}
+      {items.map((item) => {
+        if (item.kind !== "stroke") return null;
+        if (item.style === "arrow" && item.points[1]) {
+          return <path key={item.id} className="canvas-arrow" d={annotationArrowPath(item.points[0], item.points[1])} />;
+        }
+        return <Stroke key={item.id} points={item.points} />;
+      })}
       {strokePreview && <Stroke points={strokePreview} draft />}
+      {arrowPreview && <path className="canvas-arrow draft-arrow" d={annotationArrowPath(...arrowPreview)} />}
     </svg>
   </>;
 }

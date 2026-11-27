@@ -2,6 +2,7 @@ import type { DocumentNode, Note } from "../documents";
 import type { Point } from "../viewport";
 import { createMindMapNode } from "./mindMap";
 import type { MindMap, MindMapEdge, MindMapNode } from "./mindMap";
+import { organizeMindMap } from "./organizeMindMap";
 
 interface Topic {
   text: string;
@@ -54,19 +55,15 @@ function topicTree(note: Pick<Note, "title" | "content">): Topic {
 export function createMarkdownMindMap(note: Pick<Note, "title" | "content">, origin: Point, nextId: () => string): MindMap {
   const nodes: MindMapNode[] = [];
   const edges: MindMapEdge[] = [];
-  let row = 0;
-
-  function layout(branch: Topic, depth: number, parentId?: string): number {
-    const id = nextId();
-    const children = branch.children.map((child) => layout(child, depth + 1, id));
-    const y = children.length ? (children[0] + children[children.length - 1]) / 2 : row++ * 106;
-    nodes.push(createMindMapNode(id, depth === 0 ? "ellipse" : "rectangle", {
-      x: origin.x + depth * 244, y: origin.y + y,
-    }, branch.text));
-    if (parentId) edges.push({ id: nextId(), from: parentId, to: id });
-    return y;
+  const pending = [{ branch: topicTree(note), id: nextId() }];
+  for (let index = 0; index < pending.length; index++) {
+    const { branch, id } = pending[index];
+    nodes.push(createMindMapNode(id, index === 0 ? "ellipse" : "rectangle", origin, branch.text));
+    for (const child of branch.children) {
+      const childId = nextId();
+      pending.push({ branch: child, id: childId });
+      edges.push({ id: nextId(), from: id, to: childId });
+    }
   }
-
-  layout(topicTree(note), 0);
-  return { nodes, edges };
+  return organizeMindMap({ nodes, edges });
 }

@@ -1,4 +1,4 @@
-import { mindMapBounds, mindMapEdgeLabel, mindMapEdgePoints, mindMapNodeAppearance } from "../mind-map";
+import { mindMapBounds, mindMapEdgeLabel, mindMapEdgeRoute, mindMapHierarchy, mindMapNodeAppearance } from "../mind-map";
 import type { MindMap, MindMapNode } from "../mind-map";
 
 const padding = 32;
@@ -72,21 +72,23 @@ export async function renderMindMapPng(map: MindMap): Promise<Blob> {
   context.translate(leftPadding - bounds.left, padding - bounds.top);
 
   const nodes = new Map(map.nodes.map((node) => [node.id, node]));
+  const { depthById } = mindMapHierarchy(map);
   const labels: { text: string; x: number; y: number }[] = [];
-  context.beginPath();
+  context.lineCap = "round";
   for (const edge of map.edges) {
     const from = nodes.get(edge.from);
     const to = nodes.get(edge.to);
     if (!from || !to) continue;
-    const { start, end, labelPoint } = mindMapEdgePoints(from, to);
+    const { start, end, firstControl, lastControl, labelPoint, width, color } = mindMapEdgeRoute(from, to, depthById.get(from.id));
+    context.beginPath();
     context.moveTo(start.x, start.y);
-    context.lineTo(end.x, end.y);
+    context.bezierCurveTo(firstControl.x, firstControl.y, lastControl.x, lastControl.y, end.x, end.y);
+    context.strokeStyle = color;
+    context.lineWidth = width;
+    context.stroke();
     const text = mindMapEdgeLabel(edge);
     if (text) labels.push({ text, ...labelPoint });
   }
-  context.strokeStyle = "#769584";
-  context.lineWidth = 2;
-  context.stroke();
   context.font = font.replace("14px", "12px");
   context.textAlign = "center";
   context.textBaseline = "alphabetic";

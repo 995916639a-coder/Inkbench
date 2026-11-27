@@ -8,12 +8,14 @@ import type { CanvasViewport, Point } from "../../function/viewport";
 type GestureTarget =
   | { kind: "pan" }
   | { kind: "draw" }
+  | { kind: "arrow" }
   | { kind: "move"; id: string; target: "object" | "node"; position: Point }
   | { kind: "resize"; id: string; size: MindMapSize };
 
 type GestureChange =
   | { kind: "pan"; viewport: CanvasViewport }
   | { kind: "draw"; points: readonly Point[] }
+  | { kind: "arrow"; points: readonly [Point, Point] }
   | { kind: "move"; id: string; target: "object" | "node"; position: Point }
   | { kind: "resize"; id: string; size: MindMapSize };
 
@@ -40,6 +42,7 @@ function changeAt(gesture: ActiveGesture, point: Point): GestureChange {
   const delta = { x: point.x - start.x, y: point.y - start.y };
   if (target.kind === "pan") return { kind: "pan", viewport: panViewport(viewport, delta) };
   if (target.kind === "draw") return { kind: "draw", points: [...gesture.points, screenToCanvas(point, viewport)] };
+  if (target.kind === "arrow") return { kind: "arrow", points: [screenToCanvas(start, viewport), screenToCanvas(point, viewport)] };
   const distance = { x: delta.x / viewport.scale, y: delta.y / viewport.scale };
   if (target.kind === "resize") return { ...target, size: resizeMindMapNode(target.size, distance) };
   return {
@@ -102,6 +105,7 @@ export function useCanvasGestures(viewport: CanvasViewport, onCommit: (change: G
     const point = eventPoint(event);
     cancel(event.pointerId);
     const distance = Math.hypot(point.x - gesture.start.x, point.y - gesture.start.y);
+    if (gesture.target.kind === "arrow" && distance < 6) return;
     if (gesture.target.kind === "draw" || distance > 0 && (!isNodeMove(gesture.target) || distance >= 3)) {
       onCommit(changeAt(gesture, point));
     }

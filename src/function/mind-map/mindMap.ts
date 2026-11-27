@@ -97,10 +97,26 @@ function border(node: MindMapNode, target: Point): Point {
   return distance ? { x: origin.x + dx / distance, y: origin.y + dy / distance } : origin;
 }
 
-export function mindMapEdgePoints(from: MindMapNode, to: MindMapNode) {
-  const start = border(from, center(to));
-  const end = border(to, center(from));
-  return { start, end, labelPoint: { x: (start.x + end.x) / 2, y: (start.y + end.y) / 2 - 6 } };
+export function mindMapEdgeRoute(from: MindMapNode, to: MindMapNode, depth = 0) {
+  const source = center(from);
+  const target = center(to);
+  const horizontalGap = Math.abs(target.x - source.x) - (from.size.width + to.size.width) / 2;
+  const verticalGap = Math.abs(target.y - source.y) - (from.size.height + to.size.height) / 2;
+  const horizontal = horizontalGap >= 0;
+  const vertical = !horizontal && verticalGap >= 0;
+  const x = horizontal ? Math.sign(target.x - source.x) : 0;
+  const y = vertical ? Math.sign(target.y - source.y) : 0;
+  const start = horizontal || vertical ? border(from, { x: source.x + x, y: source.y + y }) : border(from, target);
+  const end = horizontal || vertical ? border(to, { x: target.x - x, y: target.y - y }) : border(to, source);
+  const tangent = Math.min(92, (horizontal ? horizontalGap : verticalGap) * .55);
+  const firstControl = horizontal || vertical ? { x: start.x + x * tangent, y: start.y + y * tangent }
+    : { x: start.x + (end.x - start.x) / 3, y: start.y + (end.y - start.y) / 3 };
+  const lastControl = horizontal || vertical ? { x: end.x - x * tangent, y: end.y - y * tangent }
+    : { x: end.x - (end.x - start.x) / 3, y: end.y - (end.y - start.y) / 3 };
+  const width = Math.max(1.25, 3.2 * .72 ** depth);
+  const color = depth === 0 ? "#567867" : depth === 1 ? "#6a8a78" : "#7e998b";
+  const labelPoint = { x: (start.x + end.x) / 2, y: (start.y + end.y) / 2 - 8 };
+  return { start, end, firstControl, lastControl, labelPoint, width, color };
 }
 
 export function mindMapBounds(nodes: readonly MindMapNode[]): Bounds | null {

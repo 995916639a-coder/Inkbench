@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { FileUp, Hand, Layers, LayoutTemplate, Network, Plus } from "lucide-react";
 import {
   addNoteCard, addStroke, addTextBox, moveCanvasItem, removeCanvasItem,
@@ -10,7 +10,7 @@ import { finishStroke } from "../../function/drawing";
 import { importMarkdownFile } from "../../function/markdown-import";
 import {
   addMindMapChild, connectMindMapNodes, createMarkdownMindMap, createMindMapExample, createMindMapNode, emptyMindMap, mindMapBounds, mindMapShapes,
-  organizeMindMap, removeMindMapElement, updateMindMapEdgeLabel, updateMindMapNode,
+  mindMapHierarchy, organizeMindMap, removeMindMapElement, updateMindMapEdgeLabel, updateMindMapNode,
 } from "../../function/mind-map";
 import type { MindMap, MindMapNode, MindMapShape } from "../../function/mind-map";
 import { renderMindMapPng } from "../../function/mind-map-export";
@@ -36,7 +36,7 @@ export interface CanvasViewProps {
 
 type NoteContent = Pick<Note, "title" | "content">;
 
-const toolKeys: Record<string, CanvasTool> = { v: "select", h: "hand", t: "text", b: "pen" };
+const toolKeys: Record<string, CanvasTool> = { v: "select", h: "hand", t: "text", b: "pen", a: "arrow" };
 const arrowSteps: Record<string, Point> = {
   ArrowLeft: { x: -1, y: 0 }, ArrowRight: { x: 1, y: 0 },
   ArrowUp: { x: 0, y: -1 }, ArrowDown: { x: 0, y: 1 },
@@ -57,6 +57,18 @@ function fitMapNodes(nodes: readonly MindMapNode[], area: HTMLElement, maximumSc
     width: Math.max(100, area.clientWidth - 76),
     height: Math.max(100, area.clientHeight - 144),
   }, maximumScale), { x: 0, y: -18 });
+}
+
+function initialMapViewport(map: MindMap, area: HTMLElement, selected?: string | null): CanvasViewport | null {
+  const overview = fitMapNodes(map.nodes, area);
+  if (!overview || overview.scale >= .65) return overview;
+
+  const outgoing = new Map<string, number>();
+  for (const { from } of map.edges) outgoing.set(from, (outgoing.get(from) ?? 0) + 1);
+  const focus = map.nodes.find((node) => node.id === selected) ?? map.nodes.reduce((most, node) => (
+    (outgoing.get(node.id) ?? 0) > (outgoing.get(most.id) ?? 0) ? node : most
+  ));
+  return fitMapNodes([focus], area, .85);
 }
 
 function isNodeInView(node: MindMapNode, viewport: CanvasViewport, area: HTMLElement): boolean {
@@ -93,6 +105,8 @@ export function CanvasView({ canvas, notes, onChange, revealNode }: CanvasViewPr
     } else if (change.kind === "draw") {
       const stroke = finishStroke(change.points);
       if (stroke) onChange({ ...canvas, items: addStroke(canvas.items, crypto.randomUUID(), stroke) });
+    } else if (change.kind === "arrow") {
+      onChange({ ...canvas, items: addStroke(canvas.items, crypto.randomUUID(), change.points, "arrow") });
     } else if (change.kind === "resize") {
       changeMindMap((map) => updateMindMapNode(map, change.id, { size: change.size }));
     } else if (change.target === "node") {
@@ -104,6 +118,7 @@ export function CanvasView({ canvas, notes, onChange, revealNode }: CanvasViewPr
   const { active: gesture, draft } = gestures;
   const viewport = draft?.kind === "pan" ? draft.viewport : canvas.viewport;
   const map = canvas.mindMap ?? emptyMindMap;
+  const { depthById } = useMemo(() => mindMapHierarchy(map), [map]);
   const renderedMap = draft?.kind === "move" && draft.target === "node" ? updateMindMapNode(map, draft.id, { position: draft.position })
     : draft?.kind === "resize" ? updateMindMapNode(map, draft.id, { size: draft.size }) : map;
 
@@ -222,7 +237,7 @@ export function CanvasView({ canvas, notes, onChange, revealNode }: CanvasViewPr
     const origin = { x: right + 92, y: 0 };
     const generated = createMarkdownMindMap(note, origin, () => crypto.randomUUID());
     const mindMap = { nodes: [...map.nodes, ...generated.nodes], edges: [...map.edges, ...generated.edges] };
-    const viewport = fitMapNodes(generated.nodes, area) ?? canvas.viewport;
+    const viewport = initialMapViewport(generated, area) ?? canvas.viewport;
     history.record({ map, viewport: canvas.viewport }, { map: mindMap, viewport });
     onChange({ ...canvas, mindMap, viewport });
     setSelected(null);
@@ -248,7 +263,7 @@ export function CanvasView({ canvas, notes, onChange, revealNode }: CanvasViewPr
     setSelected(null);
     setEditing(null);
     setOutlineOpen(false);
-    const viewport = fitMapNodes(mindMap.nodes, stage.current) ?? canvas.viewport;
+    const viewport = initialMapViewport(mindMap, stage.current, selected) ?? canvas.viewport;
     history.record({ map, viewport: canvas.viewport }, { map: mindMap, viewport }, { action: "layout" });
     onChange({ ...canvas, mindMap, viewport });
   }
@@ -430,6 +445,8 @@ export function CanvasView({ canvas, notes, onChange, revealNode }: CanvasViewPr
           gestures.begin(event, { kind: "pan" });
         } else if (tool === "pen") {
           gestures.begin(event, { kind: "draw" });
+        } else if (tool === "arrow") {
+          gestures.begin(event, { kind: "arrow" });
         } else if (tool === "connect") {
           if (!node) return;
           if (linkSource && node.id !== linkSource) {
@@ -500,7 +517,7 @@ export function CanvasView({ canvas, notes, onChange, revealNode }: CanvasViewPr
         </button>
       </div>}
       <div className="canvas-world" style={{ transform: `translate(${offset.x}px, ${offset.y}px) scale(${viewport.scale})` }}>
-        <MindMapLayer map={renderedMap} selected={selected} editing={editing} linkSource={linkSource}
+        <MindMapLayer map={renderedMap} depthById={depthById} selected={selected} editing={editing} linkSource={linkSource}
           onEdit={startNodeEdit} onResize={(id, size) => changeMindMap((map) => updateMindMapNode(map, id, { size }))}
           onFinishEdit={() => {
             setEditing(null);
@@ -509,6 +526,7 @@ export function CanvasView({ canvas, notes, onChange, revealNode }: CanvasViewPr
         <CanvasItemsLayer items={canvas.items} selected={selected} editing={editing} allowDoubleClickEdit={tool === "select"}
           movePreview={draft?.kind === "move" && draft.target === "object" ? draft : undefined}
           strokePreview={draft?.kind === "draw" ? draft.points : undefined}
+          arrowPreview={draft?.kind === "arrow" ? draft.points : undefined}
           onEdit={(id, active) => { setSelected(id); setEditing(active ? id : null); }}
           onRemove={removeObject}
           onNoteChange={(id, note) => onChange({ ...canvas, items: updateNoteCard(canvas.items, id, note) })}
