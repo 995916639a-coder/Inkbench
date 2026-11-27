@@ -1,10 +1,12 @@
 import { useRef } from "react";
 import type { MindMap } from "../../function/mind-map";
 import type { CanvasViewport } from "../../function/viewport";
+import type { CanvasDocument } from "../../workspace/workspace";
 
 export interface MindMapSnapshot {
   map: MindMap;
   viewport?: CanvasViewport;
+  mapTranslation?: CanvasDocument["mapTranslation"] | null;
 }
 
 interface HistoryEntry {

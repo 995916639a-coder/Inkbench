@@ -1,3 +1,4 @@
+import { useTranslation } from "../../i18n";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { FileText, LayoutTemplate, Search, X } from "lucide-react";
 import { searchWorkspace } from "../../function/workspace-search";
@@ -12,11 +13,14 @@ interface WorkspaceSearchDialogProps {
 }
 
 export function WorkspaceSearchDialog({ workspace, onOpenResult, onClose }: WorkspaceSearchDialogProps) {
+  const { t } = useTranslation();
   const dialog = useRef<HTMLDialogElement>(null);
   const list = useRef<HTMLDivElement>(null);
   const [query, setQuery] = useState("");
   const [highlighted, setHighlighted] = useState(0);
-  const results = useMemo(() => searchWorkspace(workspace, query), [workspace, query]);
+  const results = useMemo(() => searchWorkspace(workspace, query, {
+    note: t("未命名笔记"), canvas: t("未命名画布"),
+  }), [workspace, query, t]);
 
   useEffect(() => { dialog.current?.showModal(); }, []);
 
@@ -25,11 +29,11 @@ export function WorkspaceSearchDialog({ workspace, onOpenResult, onClose }: Work
     onOpenResult(result);
   }
 
-  return <dialog ref={dialog} className="workspace-search-dialog" aria-label="搜索工作区" onClose={onClose}
+  return <dialog ref={dialog} className="workspace-search-dialog" aria-label={t("搜索工作区")} onClose={onClose}
     onClick={(event) => { if (event.target === event.currentTarget) event.currentTarget.close(); }}>
     <div className="workspace-search-header">
       <Search size={18} aria-hidden="true" />
-      <input type="text" placeholder="搜索标题、正文或导图节点" role="combobox" aria-label="搜索工作区" aria-expanded="true"
+      <input type="text" placeholder={t("搜索标题、正文或导图节点")} role="combobox" aria-label={t("搜索工作区")} aria-expanded="true"
         aria-autocomplete="list" aria-controls="workspace-search-results"
         aria-activedescendant={results[highlighted] ? `workspace-search-${highlighted}` : undefined}
         value={query} autoFocus onChange={(event) => {
@@ -49,9 +53,9 @@ export function WorkspaceSearchDialog({ workspace, onOpenResult, onClose }: Work
             list.current?.children[next]?.scrollIntoView({ block: "nearest" });
           }
         }} />
-      <button className="icon-button" type="button" aria-label="关闭搜索" onClick={() => dialog.current?.close()}><X size={17} /></button>
+      <button className="icon-button" type="button" aria-label={t("关闭搜索")} onClick={() => dialog.current?.close()}><X size={17} /></button>
     </div>
-    <div id="workspace-search-results" className="workspace-search-results" role="listbox" aria-label="搜索结果" ref={list}>
+    <div id="workspace-search-results" className="workspace-search-results" role="listbox" aria-label={t("搜索结果")} ref={list}>
       {results.map((result, index) => {
         const Icon = result.entry.kind === "note" ? FileText : LayoutTemplate;
         return <div key={result.entry.id} id={`workspace-search-${index}`} role="option" aria-selected={index === highlighted}
@@ -60,7 +64,7 @@ export function WorkspaceSearchDialog({ workspace, onOpenResult, onClose }: Work
           <div><strong>{result.title}</strong>{result.excerpt && <small>{result.excerpt}</small>}</div>
         </div>;
       })}
-      {!results.length && <p role="status">{query.trim() ? "找不到相关内容" : "工作区为空"}</p>}
+      {!results.length && <p role="status">{query.trim() ? t("找不到相关内容") : t("工作区为空")}</p>}
     </div>
   </dialog>;
 }

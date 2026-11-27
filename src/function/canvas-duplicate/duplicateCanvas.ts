@@ -2,8 +2,8 @@ import type { CanvasDocument } from "../../workspace/workspace";
 
 export function duplicateCanvas(
   source: CanvasDocument, existingTitles: readonly string[], nextId: () => string = () => crypto.randomUUID(),
+  title = `${source.title.trim() || "未命名画布"} 副本`,
 ): CanvasDocument {
-  const title = `${source.title.trim() || "未命名画布"} 副本`;
   const titles = new Set(existingTitles);
   let availableTitle = title;
   for (let suffix = 2; titles.has(availableTitle); suffix++) availableTitle = `${title} ${suffix}`;
@@ -24,9 +24,22 @@ export function duplicateCanvas(
       edges: copy.mindMap.edges.flatMap((edge) => {
         const from = ids.get(edge.from);
         const to = ids.get(edge.to);
-        return from && to ? [{ ...edge, id: nextId(), from, to }] : [];
+        if (!from || !to) return [];
+        const id = nextId();
+        ids.set(edge.id, id);
+        return [{ ...edge, id, from, to }];
       }),
     };
+    if (copy.mapTranslation) {
+      function remap<T extends { id: string }>(entries: readonly T[]): T[] {
+        return entries.flatMap((entry) => {
+          const id = ids.get(entry.id);
+          return id ? [{ ...entry, id }] : [];
+        });
+      }
+      const { nodes, edges } = copy.mapTranslation.alternate;
+      copy.mapTranslation.alternate = { nodes: remap(nodes), edges: remap(edges) };
+    }
   }
   return copy;
 }

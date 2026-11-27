@@ -1,3 +1,4 @@
+import { useTranslation } from "../../i18n";
 import { useState } from "react";
 import type { CSSProperties } from "react";
 import { Circle, Palette, Plus, RectangleHorizontal } from "lucide-react";
@@ -19,6 +20,7 @@ interface MindMapLayerProps {
 }
 
 export function MindMapLayer({ map, depthById, selected, editing, linkSource, onEdit, onResize, onFinishEdit, onTextChange }: MindMapLayerProps) {
+  const { t } = useTranslation();
   const nodes = new Map(map.nodes.map((node) => [node.id, node]));
 
   return <>
@@ -45,7 +47,7 @@ export function MindMapLayer({ map, depthById, selected, editing, linkSource, on
       const appearance = mindMapNodeAppearance(node);
       return <article key={node.id} data-map-node={node.id} data-shape={node.shape}
         className={`mind-map-node ${node.shape}${isSelected ? " is-selected" : ""}${linkSource === node.id ? " is-link-source" : ""}`}
-        aria-label={node.text.trim() || "空白节点"} tabIndex={0}
+        aria-label={node.text.trim() || t("空白节点")} tabIndex={0}
         style={{
           left: node.position.x, top: node.position.y, width: node.size.width, height: node.size.height,
           backgroundColor: appearance.fill, color: appearance.ink, "--mind-map-node-border": appearance.border,
@@ -59,7 +61,7 @@ export function MindMapLayer({ map, depthById, selected, editing, linkSource, on
           onEdit(node.id);
         }}>
         {isEditing
-          ? <textarea aria-label="节点文字" autoFocus value={node.text} placeholder="输入节点文字"
+          ? <textarea aria-label={t("节点文字")} autoFocus value={node.text} placeholder={t("输入节点文字")}
               onChange={(event) => onTextChange(node.id, event.currentTarget.value)}
               onKeyDown={(event) => {
                 if (event.key === "Enter" && !event.shiftKey && !event.nativeEvent.isComposing) {
@@ -67,9 +69,9 @@ export function MindMapLayer({ map, depthById, selected, editing, linkSource, on
                   onFinishEdit();
                 }
               }} />
-          : <span className="mind-map-label" title={node.text}>{node.text || "双击输入文字"}</span>}
+          : <span className="mind-map-label" title={node.text}>{node.text || t("双击输入文字")}</span>}
         {isSelected && !isEditing && <button type="button" data-map-resize className="mind-map-resize"
-          aria-label="调整节点大小" title="拖动调整大小，也可使用方向键" onKeyDown={(event) => {
+          aria-label={t("调整节点大小")} title={t("拖动调整大小，也可使用方向键")} onKeyDown={(event) => {
             const deltas = { ArrowLeft: { x: -8, y: 0 }, ArrowRight: { x: 8, y: 0 },
               ArrowUp: { x: 0, y: -8 }, ArrowDown: { x: 0, y: 8 } };
             const delta = deltas[event.key as keyof typeof deltas];
@@ -97,25 +99,25 @@ interface MindMapSelectionActionsProps {
 export function MindMapSelectionActions({
   node, edge, editing, onEdit, onAddChild, onChangeShape, onChooseTone, onEdgeLabelChange, onDelete,
 }: MindMapSelectionActionsProps) {
+  const { t } = useTranslation();
   const [paletteOpen, setPaletteOpen] = useState(false);
   const Shape = node?.shape === "ellipse" ? RectangleHorizontal : Circle;
-  const shapeLabel = node?.shape === "ellipse" ? "改为长方形" : "改为椭圆";
-  return <div className="canvas-placement canvas-controls mind-map-selection" role="group" aria-label="导图编辑">
+  const shapeLabel = node?.shape === "ellipse" ? t("改为长方形") : t("改为椭圆");
+  return <div className="canvas-placement canvas-controls mind-map-selection" role="group" aria-label={t("导图编辑")}>
     {node && <>
-      <button className="text-button" type="button" onClick={onEdit}>{editing ? "完成编辑" : "编辑节点"}</button>
-      <button className="text-button" type="button" title="添加子节点（Insert）" onClick={onAddChild}>
-        <Plus size={14} />子节点
-      </button>
+      <button className="text-button" type="button" onClick={onEdit}>{editing ? t("完成编辑") : t("编辑节点")}</button>
+      <button className="text-button" type="button" title={t("添加子节点（Insert）")} onClick={onAddChild}>
+        <Plus size={14} />{t("子节点")}</button>
       <button className="icon-button" type="button" aria-label={shapeLabel} title={shapeLabel} onClick={onChangeShape}>
         <Shape size={14} />
       </button>
       <div className="mind-map-palette">
-        <button className="icon-button" type="button" aria-label="节点颜色" title="节点颜色" aria-expanded={paletteOpen}
+        <button className="icon-button" type="button" aria-label={t("节点颜色")} title={t("节点颜色")} aria-expanded={paletteOpen}
           onClick={() => setPaletteOpen(!paletteOpen)}><Palette size={15} /></button>
-        {paletteOpen && <div className="mind-map-swatches" role="group" aria-label="选择节点颜色">
+        {paletteOpen && <div className="mind-map-swatches" role="group" aria-label={t("选择节点颜色")}>
           {([undefined, ...Object.keys(mindMapTones)] as (MindMapTone | undefined)[]).map((tone) => {
             const appearance = mindMapNodeAppearance({ shape: node.shape, tone });
-            const label = tone ? mindMapTones[tone].label : "默认";
+            const label = t(tone ? mindMapTones[tone].label : "默认");
             return <button className="mind-map-swatch" type="button" key={tone ?? "default"} aria-label={label}
               title={label} aria-pressed={node.tone === tone} style={{ background: appearance.fill, borderColor: appearance.border }}
               onClick={() => {
@@ -127,7 +129,7 @@ export function MindMapSelectionActions({
       </div>
     </>}
     {edge && <>
-      {editing && <input className="mind-map-edge-input" type="text" aria-label="连线名称" placeholder="连线名称" maxLength={64}
+      {editing && <input className="mind-map-edge-input" type="text" aria-label={t("连线名称")} placeholder={t("连线名称")} maxLength={64}
         value={edge.label ?? ""} autoFocus onChange={(event) => onEdgeLabelChange(event.currentTarget.value)}
         onKeyDown={(event) => {
           if (event.key === "Enter" && !event.nativeEvent.isComposing) {
@@ -135,8 +137,8 @@ export function MindMapSelectionActions({
             onEdit();
           }
         }} />}
-      <button className="text-button" type="button" onClick={onEdit}>{editing ? "完成编辑" : "编辑连线"}</button>
+      <button className="text-button" type="button" onClick={onEdit}>{editing ? t("完成编辑") : t("编辑连线")}</button>
     </>}
-    <button className="text-button destructive-text" type="button" onClick={onDelete}>{node ? "删除节点" : "删除连线"}</button>
+    <button className="text-button destructive-text" type="button" onClick={onDelete}>{node ? t("删除节点") : t("删除连线")}</button>
   </div>;
 }

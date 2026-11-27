@@ -190,9 +190,11 @@ button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-
   color: var(--muted);
   font-size: 12px;
 }
+.sidebar-footer-actions { display: flex; align-items: center; gap: 3px; }
 .sidebar-updates, .sidebar-local { display: flex; align-items: center; gap: 8px; }
 .sidebar-updates {
-  width: 100%;
+  flex: 1;
+  min-width: 0;
   min-height: 33px;
   padding-inline: 7px;
   border: 0;
@@ -203,6 +205,7 @@ button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-
 }
 .sidebar-updates:hover { background: var(--hover); }
 .sidebar-updates svg { flex: none; color: var(--green); }
+.sidebar-settings { color: var(--green); }
 .sidebar-version { margin-left: auto; color: var(--muted); font: 11px var(--mono); }
 .sidebar-local { margin: 6px 7px 0; }
 .local-indicator { width: 7px; height: 7px; border-radius: 50%; background: #77947d; }
@@ -305,11 +308,14 @@ button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-
   border-radius: 13px;
   box-shadow: 0 2px 5px #35392a06;
 }
+.note-heading { display: flex; align-items: center; gap: 10px; margin-bottom: 21px; }
+.note-translate { color: var(--green); border: 1px solid var(--border); }
 .note-title {
   display: block;
   width: 100%;
   padding: 2px 0;
-  margin: 0 0 21px;
+  margin: 0;
+  min-width: 0;
   border: 0;
   border-bottom: 1px solid transparent;
   outline: none;
@@ -333,6 +339,8 @@ button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-
   .brand-name { font-size: 15px; }
   .brand-subtitle { font-size: 10px; }
   .sidebar-version { display: none; }
+  .sidebar-updates { gap: 5px; padding-inline: 4px; }
+  .sidebar-settings { width: 27px; }
   .sidebar-search kbd { display: none; }
   .workbench-header { padding-inline: 9px; }
   .workbench-actions { gap: 4px; }

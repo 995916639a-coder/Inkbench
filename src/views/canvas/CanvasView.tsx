@@ -1,3 +1,4 @@
+import { useTranslation } from "../../i18n";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { FileUp, Hand, Layers, LayoutTemplate, Network, Plus } from "lucide-react";
 import {
@@ -15,6 +16,8 @@ import {
 } from "../../function/mind-map";
 import type { MindMap, MindMapNode, MindMapShape } from "../../function/mind-map";
 import { renderMindMapPng } from "../../function/mind-map-export";
+import { captureMindMapLabels, switchMindMapTranslation, translatedVersion } from "../../function/note-translation";
+import type { TranslationDirection } from "../../function/note-translation";
 import { fitViewport, panViewport, screenToCanvas, zoomViewport } from "../../function/viewport";
 import type { CanvasViewport, Point } from "../../function/viewport";
 import type { CanvasDocument } from "../../workspace/workspace";
@@ -33,6 +36,7 @@ export interface CanvasViewProps {
   notes: readonly Note[];
   onChange: (canvas: CanvasDocument) => void;
   revealNode?: { nodeId: string };
+  onTranslate?: (source: CanvasDocument, replace: (map: MindMap, direction: TranslationDirection) => boolean) => void;
 }
 
 type NoteContent = Pick<Note, "title" | "content">;
@@ -80,7 +84,8 @@ function isNodeInView(node: MindMapNode, viewport: CanvasViewport, area: HTMLEle
     && top + node.size.height * scale <= area.clientHeight - 72;
 }
 
-export function CanvasView({ canvas, notes, onChange, revealNode }: CanvasViewProps) {
+export function CanvasView({ canvas, notes, onChange, revealNode, onTranslate }: CanvasViewProps) {
+  const { t } = useTranslation();
   const [tool, setTool] = useState<CanvasTool>("select");
   const [arrowBend, setArrowBend] = useState<ArrowBend>("right");
   const [selected, setSelected] = useState<string | null>(null);
@@ -277,7 +282,36 @@ export function CanvasView({ canvas, notes, onChange, revealNode }: CanvasViewPr
     setEditing(null);
     setOutlineOpen(false);
     const { canvas, onChange } = latest.current;
-    onChange({ ...canvas, mindMap: snapshot.map, viewport: snapshot.viewport ?? canvas.viewport });
+    const mapTranslation = snapshot.mapTranslation === undefined ? canvas.mapTranslation : snapshot.mapTranslation ?? undefined;
+    onChange({ ...canvas, mindMap: snapshot.map, mapTranslation, viewport: snapshot.viewport ?? canvas.viewport });
+  }
+
+  function applyMapLanguage(mindMap: MindMap, mapTranslation: NonNullable<CanvasDocument["mapTranslation"]>) {
+    const { canvas, onChange } = latest.current;
+    if (!canvas.mindMap) return;
+    history.record({ map: canvas.mindMap, mapTranslation: canvas.mapTranslation ?? null }, { map: mindMap, mapTranslation });
+    const next = { ...canvas, mindMap, mapTranslation };
+    latest.current = { canvas: next, onChange };
+    setEditing(null);
+    setLinkSource(null);
+    onChange(next);
+  }
+
+  function translateMap() {
+    setMenu(null);
+    const { canvas } = latest.current;
+    const { mindMap, mapTranslation } = canvas;
+    if (!mindMap) return;
+    if (mapTranslation) {
+      const next = switchMindMapTranslation(mindMap, mapTranslation);
+      applyMapLanguage(next.mindMap, next.mapTranslation);
+      return;
+    }
+    onTranslate?.(canvas, (translated, direction) => {
+      if (latest.current.canvas.mindMap !== mindMap) return false;
+      applyMapLanguage(translated, translatedVersion(direction, captureMindMapLabels(mindMap)));
+      return true;
+    });
   }
 
   async function exportMindMap() {
@@ -291,7 +325,7 @@ export function CanvasView({ canvas, notes, onChange, revealNode }: CanvasViewPr
       const url = URL.createObjectURL(image);
       const link = document.createElement("a");
       link.href = url;
-      link.download = `${canvas.title.trim().replace(/[\\/:*?"<>|]/g, "_") || "未命名画布"}-思维导图.png`;
+      link.download = `${canvas.title.trim().replace(/[\\/:*?"<>|]/g, "_") || t("未命名画布")}-${t("思维导图")}.png`;
       link.click();
       window.setTimeout(() => URL.revokeObjectURL(url), 1500);
     } catch (error) {
@@ -336,18 +370,18 @@ export function CanvasView({ canvas, notes, onChange, revealNode }: CanvasViewPr
   const selectedNode = map.nodes.find((node) => node.id === selected);
   const selectedEdge = map.edges.find((edge) => edge.id === selected);
 
-  return <section className="canvas-view" aria-label="画布页面">
+  return <section className="canvas-view" aria-label={t("画布页面")}>
     <div className="canvas-heading">
       <div className="canvas-heading-icon"><LayoutTemplate size={24} strokeWidth={1.65} /></div>
       <div className="canvas-heading-text">
-        <h1>{canvas.title || "未命名画布"}</h1>
-        <p>自由画布</p>
+        <h1>{canvas.title || t("未命名画布")}</h1>
+        <p>{t("自由画布")}</p>
       </div>
-      <div className="canvas-heading-meta"><Layers size={15} /><span>{canvas.items.length + map.nodes.length + map.edges.length} 个对象</span></div>
+      <div className="canvas-heading-meta"><Layers size={15} /><span>{t("对象数：{{count}}", { count: canvas.items.length + map.nodes.length + map.edges.length })}</span></div>
     </div>
     <div
       ref={stage} className={`canvas-stage tool-${noteToPlace ? "placing" : tool}${draft?.kind === "pan" ? " is-panning" : ""}`}
-      aria-label="画布绘制区" tabIndex={0}
+      aria-label={t("画布绘制区")} tabIndex={0}
       style={{
         backgroundSize: `${Math.max(10, 20 * viewport.scale)}px ${Math.max(10, 20 * viewport.scale)}px`,
         backgroundPosition: `calc(50% + ${offset.x}px) calc(50% + ${offset.y}px)`,
@@ -511,12 +545,11 @@ export function CanvasView({ canvas, notes, onChange, revealNode }: CanvasViewPr
     >
       {canvas.items.length === 0 && map.nodes.length === 0 && !noteToPlace && tool === "select" && <div className="canvas-empty">
         <span className="empty-symbol"><LayoutTemplate size={27} strokeWidth={1.55} /></span>
-        <h2>从空白开始</h2><p>添加笔记、放置文本，或随手画几笔。</p>
+        <h2>{t("从空白开始")}</h2><p>{t("添加笔记、放置文本，或随手画几笔。")}</p>
         <button className="secondary-button canvas-controls" type="button" onClick={() => {
           if (stage.current) placeGeneratedMap(createMindMapExample(), stage.current);
         }}>
-          <Network size={15} /> 插入示例导图
-        </button>
+          <Network size={15} />{t("插入示例导图")}</button>
       </div>}
       <div className="canvas-world" style={{ transform: `translate(${offset.x}px, ${offset.y}px) scale(${viewport.scale})` }}>
         <MindMapLayer map={renderedMap} depthById={depthById} selected={selected} editing={editing} linkSource={linkSource}
@@ -535,13 +568,13 @@ export function CanvasView({ canvas, notes, onChange, revealNode }: CanvasViewPr
           onTextChange={(id, text) => onChange({ ...canvas, items: updateTextBox(canvas.items, id, text) })} />
       </div>
       {noteToPlace && <div className="canvas-placement canvas-controls" role="status">
-        <Plus size={16} /> 点击画布放置「{noteToPlace.title || "未命名笔记"}」
-        <button className="text-button" type="button" onClick={() => setNoteToPlace(null)}>取消</button>
+        <Plus size={16} />{t("点击画布放置「{{title}}」", { title: noteToPlace.title || t("未命名笔记") })}
+        <button className="text-button" type="button" onClick={() => setNoteToPlace(null)}>{t("取消")}</button>
       </div>}
       {(isMindMapShape(tool) || tool === "connect") && <div className="canvas-placement canvas-controls">
-        <span role="status">{tool === "connect" ? linkSource ? "选择要连接的第二个节点" : "选择要连接的第一个节点"
-          : `点击画布放置${tool === "ellipse" ? "椭圆" : "长方形"}节点`}</span>
-        <button className="text-button" type="button" onClick={() => chooseTool("select")}>完成</button>
+        <span role="status">{tool === "connect" ? linkSource ? t("选择要连接的第二个节点") : t("选择要连接的第一个节点")
+          : t(tool === "ellipse" ? "点击画布放置椭圆节点" : "点击画布放置长方形节点")}</span>
+        <button className="text-button" type="button" onClick={() => chooseTool("select")}>{t("完成")}</button>
       </div>}
       {tool === "select" && !noteToPlace && !canvasError && selected && (selectedNode || selectedEdge)
         && <MindMapSelectionActions key={selected} node={selectedNode} edge={selectedEdge} editing={editing === selected}
@@ -559,26 +592,26 @@ export function CanvasView({ canvas, notes, onChange, revealNode }: CanvasViewPr
           }} onEdgeLabelChange={(label) => changeMindMap((map) => updateMindMapEdgeLabel(map, selected, label), { mergeKey: `label:${selected}` })}
           onDelete={() => removeObject(selected)} />}
       {canvasError && !noteToPlace && <div className="canvas-placement canvas-controls canvas-error" role="alert">
-        {canvasError}<button className="text-button" type="button" onClick={() => setCanvasError(null)}>关闭</button>
+        {t(canvasError)}<button className="text-button" type="button" onClick={() => setCanvasError(null)}>{t("关闭")}</button>
       </div>}
-      {fileOverCanvas && <div className="canvas-file-drop" aria-hidden="true"><FileUp size={18} /> 松开以导入 Markdown</div>}
+      {fileOverCanvas && <div className="canvas-file-drop" aria-hidden="true"><FileUp size={18} />{t("松开以导入 Markdown")}</div>}
       {outlineOpen && <MindMapOutline nodes={map.nodes}
         onClose={() => {
           setOutlineOpen(false);
           stage.current?.focus({ preventScroll: true });
         }} onFocusNode={(node) => showMapNodes([node], node)} />}
-      <input hidden ref={markdownInput} type="file" accept=".md,.markdown,text/markdown" aria-label="选择画布 Markdown 文件"
+      <input hidden ref={markdownInput} type="file" accept=".md,.markdown,text/markdown" aria-label={t("选择画布 Markdown 文件")}
         onChange={(event) => {
           const input = event.currentTarget;
           const file = input.files?.[0];
           input.value = "";
           if (file) void importFile(file);
         }} />
-      <div className="canvas-hint"><Hand size={14} /> 中键拖动画布 <span>·</span> 滚轮缩放</div>
+      <div className="canvas-hint"><Hand size={14} />{t("中键拖动画布")}<span>·</span>{t("滚轮缩放")}</div>
       <CanvasToolbar tool={tool} scale={viewport.scale} menu={menu} notes={notes}
         arrowBend={arrowBend} onArrowBend={setArrowBend}
         canUndo={canUndo} hasMindMap={map.nodes.length > 0} canArrangeMindMap={map.nodes.length > 1}
-        undoMapLabel={history.canUndo ? history.lastAction === "layout" ? "撤销整理" : "撤销导图操作" : undefined}
+        undoMapLabel={history.canUndo ? history.lastAction === "layout" ? t("撤销整理") : t("撤销导图操作") : undefined}
         canRedoMap={history.canRedo} onChooseTool={chooseTool} onMenuChange={setMenu}
         onChooseNote={(note) => {
           chooseTool("select");
@@ -609,6 +642,8 @@ export function CanvasView({ canvas, notes, onChange, revealNode }: CanvasViewPr
         onUndoMap={() => restoreMindMap(history.undo())}
         onRedoMap={() => restoreMindMap(history.redo())}
         onUndo={() => onChange({ ...canvas, items: undoLastStroke(canvas.items) })}
+        mapTranslationLanguage={canvas.mapTranslation?.language}
+        onTranslateMindMap={onTranslate || canvas.mapTranslation ? translateMap : undefined}
         onZoom={changeZoom} />
     </div>
   </section>;

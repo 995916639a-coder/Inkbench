@@ -11,7 +11,9 @@ GitHub Actions 在 Linux 上检查推送和 Pull Request。合并到 `main` 后�
 | 步骤 | 安装锁定依赖，运行 TypeScript 类型检查和自动化测试。Pull Request 构建界面与 Electron 入口，`main` 的推送完成构建并打包。 |
 | 产物 | 成功的 `main` 运行提供 `inkbench-linux-amd64`，其中包含以应用版本命名的 `.deb`。如果该版本尚未发布，工作流还会创建对应的 GitHub Release。 |
 
-工作流位于 `.github/workflows/ci.yml`。本地可运行 `npm ci`、`npm run typecheck`、`npm test` 和 `npm run build` 复现检查。自动化测试覆盖导图生成、连线、布局及旧版画布读写。
+工作流位于 `.github/workflows/ci.yml`。本地可运行 `ONNXRUNTIME_NODE_INSTALL=skip npm ci`、`npm run typecheck`、`npm test` 和 `npm run build` 复现检查。自动化测试覆盖导图生成、连线、布局、旧版画布读写以及翻译格式保留。
+
+打包会运行 `npm run prepare:models` 下载固定版本的中英模型并校验 SHA-256，已校验的文件会复用。安装包包含 CPU 推理引擎、模型和分发许可。模型下载发生在构建环节，安装后的桌面程序从本地读取模型。[模型说明](translation-model-notices.md)
 
 ## 下载安装包
 

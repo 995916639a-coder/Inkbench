@@ -1,3 +1,4 @@
+import { useTranslation } from "../../i18n";
 import { Layers, Pencil, Trash2 } from "lucide-react";
 import { RichTextEditor } from "../../editor/RichTextEditor";
 import type { CanvasItem, NoteCard } from "../../function/canvas-items";
@@ -28,6 +29,7 @@ function Stroke({ points, draft = false }: { points: readonly Point[]; draft?: b
 export function CanvasItemsLayer({
   items, selected, editing, allowDoubleClickEdit, movePreview, strokePreview, arrowPreview, onEdit, onRemove, onNoteChange, onTextChange,
 }: CanvasItemsLayerProps) {
+  const { t } = useTranslation();
   return <>
     {items.map((item) => {
       if (item.kind === "stroke") return null;
@@ -46,13 +48,13 @@ export function CanvasItemsLayer({
         }}>
         <header className="object-header" data-drag-handle>
           <span className="object-kind-icon">{isCard ? <Layers size={15} /> : <span>T</span>}</span>
-          {isCard && isEditing ? <input className="object-title-input" aria-label="卡片标题" value={item.title}
+          {isCard && isEditing ? <input className="object-title-input" aria-label={t("卡片标题")} value={item.title}
             onChange={(event) => onNoteChange(item.id, { title: event.currentTarget.value, content: item.content })} />
-            : <span className="object-label">{isCard ? item.title || "未命名笔记" : "文本框"}</span>}
+            : <span className="object-label">{isCard ? item.title || t("未命名笔记") : t("文本框")}</span>}
           <div className="object-actions">
-            <button type="button" className="icon-button" title={isEditing ? "完成编辑" : "编辑对象"}
-              aria-label={isEditing ? "完成编辑" : "编辑对象"} onClick={() => onEdit(item.id, !isEditing)}><Pencil size={13} /></button>
-            <button type="button" className="icon-button" title="删除对象" aria-label="删除对象" onClick={() => onRemove(item.id)}>
+            <button type="button" className="icon-button" title={isEditing ? t("完成编辑") : t("编辑对象")}
+              aria-label={isEditing ? t("完成编辑") : t("编辑对象")} onClick={() => onEdit(item.id, !isEditing)}><Pencil size={13} /></button>
+            <button type="button" className="icon-button" title={t("删除对象")} aria-label={t("删除对象")} onClick={() => onRemove(item.id)}>
               <Trash2 size={13} />
             </button>
           </div>
@@ -60,11 +62,11 @@ export function CanvasItemsLayer({
         {isCard ? <div className="object-body">
           <RichTextEditor editable={isEditing} content={item.content}
             onChange={(content) => onNoteChange(item.id, { title: item.title, content })} />
-        </div> : isEditing ? <textarea className="object-text-input" aria-label="文本框内容" placeholder="输入文本…"
+        </div> : isEditing ? <textarea className="object-text-input" aria-label={t("文本框内容")} placeholder={t("输入文本…")}
           value={item.text} rows={Math.max(3, rest.length + 1)} autoFocus
           onChange={(event) => onTextChange(item.id, event.currentTarget.value)} />
           : <div className="object-body text-preview">
-            <strong>{firstLine || "空白文本框"}</strong>
+            <strong>{firstLine || t("空白文本框")}</strong>
             {rest.length > 0 && <p>{rest.join("\n")}</p>}
           </div>}
       </article>;

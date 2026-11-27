@@ -30,10 +30,10 @@
 
 ## 快速开始
 
-在 Ubuntu 或 Debian 的 x86_64 电脑上，从 GitHub Releases 的 Assets 下载 `inkbench_1.1.3_amd64.deb`，然后在安装包所在目录运行以下命令。安装完成后，从系统应用菜单打开 Inkbench。[下载安装包](https://github.com/995916639a-coder/Inkbench/releases/latest)
+在 Ubuntu 或 Debian 的 x86_64 电脑上，从 GitHub Releases 的 Assets 下载 `inkbench_1.2.0_amd64.deb`，然后在安装包所在目录运行以下命令。安装完成后，从系统应用菜单打开 Inkbench。[下载安装包](https://github.com/995916639a-coder/Inkbench/releases/latest)
 
 ```sh
-sudo apt install ./inkbench_1.1.3_amd64.deb
+sudo apt install ./inkbench_1.2.0_amd64.deb
 ```
 
 ### 开始记笔记
@@ -44,7 +44,9 @@ sudo apt install ./inkbench_1.1.3_amd64.deb
 4. 桌面版启动时最大化并保留系统标题栏。按 F11 或点击应用右上角的窗口按钮可最大化或还原窗口。
 5. 点击工作台顶部的侧栏按钮，或按 `Ctrl+\\`，可以收起或展开文件列表。
 
-按 `Ctrl + +` 或 `Ctrl + =` 放大整个应用，`Ctrl + -` 缩小，`Ctrl + 0` 恢复到 100%。
+点击侧栏左下角的齿轮打开设置，可以调整界面缩放。也可按 `Ctrl + +` 或 `Ctrl + =` 放大整个应用，`Ctrl + -` 缩小，`Ctrl + 0` 恢复到 100%。
+
+在「设置 → 界面语言」可以选择简体中文或 English。
 
 在侧栏的条目菜单里选择「重命名」。输入后点击输入框外或按 Enter 保存，按 Esc 取消。
 
@@ -55,6 +57,12 @@ sudo apt install ./inkbench_1.1.3_amd64.deb
 - 生成导图时，从画布底部「思维导图 → 从 Markdown 生成」选择文件。
 
 导入使用 UTF-8 编码，保留标题、列表和代码块等常用格式。表格、图片语法和 HTML 会保留为可编辑文本。
+
+### 离线翻译
+
+- 在桌面版点击笔记标题旁的翻译图标，或选择「思维导图 → 翻译导图」。
+- 首次选择「中文 → 英文」或「英文 → 中文」，点击「离线翻译」。译文直接显示在当前条目。之后从同一入口切换中英文，回到原语言时恢复原文。
+- 笔记保留代码块、行内代码和链接地址。导图保留节点位置、连线和配色。中英模型随安装包交付，首次使用即可离线翻译。
 
 ## 功能介绍
 
@@ -73,7 +81,7 @@ sudo apt install ./inkbench_1.1.3_amd64.deb
 在项目目录使用 Node.js 24 和 npm 安装依赖，然后启动本地预览。
 
 ```sh
-npm ci
+ONNXRUNTIME_NODE_INSTALL=skip npm ci
 npm run dev
 ```
 
