@@ -23,6 +23,10 @@ export interface Note {
   content: DocumentContent;
 }
 
-export declare function createNote(id: string, title?: string): Note;
+export function createNote(id: string, title = "未命名笔记"): Note {
+  return { id, title, content: { type: "doc", content: [{ type: "paragraph" }] } };
+}
 
-export declare function copyDocumentContent(content: DocumentContent): DocumentContent;
+export function copyDocumentContent(content: DocumentContent): DocumentContent {
+  return structuredClone(content);
+}

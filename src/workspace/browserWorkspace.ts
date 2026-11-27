@@ -1,3 +1,9 @@
-import type { WorkspaceStorage } from "./workspace";
+import type { Workspace, WorkspaceStorage } from "./workspace";
 
-export declare function createBrowserWorkspaceStorage(): WorkspaceStorage;
+export function createBrowserWorkspaceStorage(): WorkspaceStorage {
+  let workspace: Workspace | null = null;
+  return {
+    async loadWorkspace() { return workspace; },
+    async saveWorkspace(nextWorkspace) { workspace = nextWorkspace; },
+  };
+}

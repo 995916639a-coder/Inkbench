@@ -1,6 +1,6 @@
 # 架构设计
 
-墨栈使用 Electron 管理 Linux 应用窗口，React 和 TypeScript 实现界面与业务操作，Vite 提供浏览器预览。两个运行入口共用同一套 React 页面。可视化编辑器计划采用 Tiptap，正文保存为结构化数据。
+墨栈使用 Electron 管理 Linux 应用窗口，React 和 TypeScript 实现界面与业务操作，Vite 提供浏览器预览。两个运行入口共用同一套 React 页面。可视化编辑器使用 Tiptap，正文保存为结构化数据。
 
 ## 入口和页面
 
@@ -11,6 +11,8 @@
 | `src/app/Sidebar.tsx` | `Sidebar` 接收条目和当前打开项，通过回调请求新建、打开、重命名或删除。 |
 | `src/views/notes/NotesView.tsx` | `NotesView` 接收笔记，通过 `onChange` 返回更新后的笔记。 |
 | `src/views/canvas/CanvasView.tsx` | `CanvasView` 接收画布和可选择的笔记，通过 `onChange` 返回更新后的画布。 |
+| `src/views/canvas/CanvasToolbar.tsx` | `CanvasToolbar` 接收当前工具和缩放比例，通过回调请求切换工具、放置笔记、撤销笔迹和缩放。 |
+| `src/views/updates/UpdatesDialog.tsx` | `UpdatesDialog` 将根目录的 `update.md` 渲染为侧栏更新公告。 |
 | `src/editor/RichTextEditor.tsx` | `RichTextEditor` 接收结构化正文，通过 `onChange` 返回更新后的正文。 |
 
 ## 底层能力
@@ -46,10 +48,8 @@
 | `saveWorkspace(workspace)` | `App` | 接收完整工作区，写入完成后返回。 |
 | `toggleFullscreen()` | `App` | 切换 Electron 窗口全屏状态，并返回切换后的状态。 |
 
-工作区记录数据版本、笔记、画布和当前打开条目。每张画布保存自己的视口。读取或保存失败会报告错误，界面保留当前内容并允许重试。写入按顺序完成，应用正常退出前完成最后一次保存。
+工作区记录数据版本、笔记、画布和当前打开条目。每张画布保存自己的视口。读取或保存失败会报告错误，界面保留当前内容并允许重试。写入按顺序完成，应用退出前会等待最后一次保存。若写入失败，退出窗口提供返回编辑的选项。
 
 ## 功能文档
 
 页面和能力各自用目录同名的 Markdown 文档说明职责。页面文档描述用法和调用顺序，能力文档列出函数名、所在文件、调用方、输入和输出。可以从画布操作顺着调用链看到坐标转换函数。[画布页面](../src/views/canvas/canvas.md) · [视口能力](../src/function/viewport/viewport.md)
-
-源文件中的声明是本轮审阅对象，函数体和运行时导出随实现阶段补齐。

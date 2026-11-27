@@ -1,1 +1,2 @@
-export type { StrokePath, finishStroke } from "./drawing";
+export { finishStroke } from "./drawing";
+export type { StrokePath } from "./drawing";

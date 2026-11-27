@@ -26,4 +26,6 @@ export interface WorkspaceStorage {
   saveWorkspace(workspace: Workspace): Promise<void>;
 }
 
-export declare function createCanvas(id: string, title?: string): CanvasDocument;
+export function createCanvas(id: string, title = "未命名画布"): CanvasDocument {
+  return { id, title, items: [], viewport: { offset: { x: 0, y: 0 }, scale: 1 } };
+}

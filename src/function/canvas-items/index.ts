@@ -1,8 +1,4 @@
-export type {
-  CanvasItem,
-  NoteCard,
-  TextBox,
-  CanvasStroke,
+export {
   addNoteCard,
   addTextBox,
   addStroke,
@@ -12,3 +8,4 @@ export type {
   removeCanvasItem,
   undoLastStroke,
 } from "./canvasItems";
+export type { CanvasItem, NoteCard, TextBox, CanvasStroke } from "./canvasItems";

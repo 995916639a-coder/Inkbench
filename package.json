@@ -1,0 +1,65 @@
+{
+  "name": "inkbench",
+  "version": "0.1.0",
+  "private": true,
+  "description": "A local notebook and canvas for programmers",
+  "author": {
+    "name": "Inkbench",
+    "email": "inkbench@users.noreply.github.com"
+  },
+  "homepage": "https://github.com/995916639a-coder/Inkbench",
+  "desktopName": "inkbench.desktop",
+  "type": "module",
+  "main": "dist/desktop/main.cjs",
+  "engines": {
+    "node": ">=22.12.0"
+  },
+  "scripts": {
+    "dev": "vite --host 127.0.0.1 --strictPort",
+    "typecheck": "tsc --noEmit",
+    "build": "vite build && esbuild desktop/main.ts desktop/preload.ts --bundle --platform=node --target=node22 --format=cjs --out-extension:.js=.cjs --external:electron --outdir=dist/desktop",
+    "desktop": "npm run build && electron .",
+    "package:linux": "npm run build && electron-builder --linux deb"
+  },
+  "devDependencies": {
+    "@fontsource-variable/dm-sans": "^5.2.0",
+    "@fontsource/ibm-plex-mono": "^5.2.0",
+    "@tiptap/core": "3.35.0",
+    "@tiptap/extension-code-block-lowlight": "3.35.0",
+    "@tiptap/extension-placeholder": "3.35.0",
+    "@tiptap/pm": "3.35.0",
+    "@tiptap/react": "3.35.0",
+    "@tiptap/starter-kit": "3.35.0",
+    "@types/node": "^24.0.0",
+    "@types/react": "^19.2.0",
+    "@types/react-dom": "^19.2.0",
+    "electron": "45.5.0",
+    "electron-builder": "26.18.0",
+    "esbuild": "^0.27.0",
+    "lowlight": "^3.3.0",
+    "lucide-react": "^1.81.0",
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0",
+    "react-markdown": "^10.1.0",
+    "typescript": "~5.9.3",
+    "vite": "^8.4.0"
+  },
+  "build": {
+    "appId": "org.inkbench.app",
+    "productName": "Inkbench",
+    "directories": {
+      "output": "release"
+    },
+    "files": [
+      "dist/**/*",
+      "package.json"
+    ],
+    "linux": {
+      "target": "deb",
+      "icon": "public/inkbench.png",
+      "syncDesktopName": true,
+      "category": "Office",
+      "synopsis": "A local notebook and canvas for programmers"
+    }
+  }
+}

@@ -25,43 +25,60 @@ export interface CanvasStroke {
 
 export type CanvasItem = NoteCard | TextBox | CanvasStroke;
 
-export declare function addNoteCard(
+export function addNoteCard(
   items: readonly CanvasItem[],
   id: string,
   position: Point,
   note: NoteSnapshot,
-): CanvasItem[];
+): CanvasItem[] {
+  return [...items, { ...note, id, kind: "note-card", position }];
+}
 
-export declare function addTextBox(
+export function addTextBox(
   items: readonly CanvasItem[],
   id: string,
   position: Point,
-): CanvasItem[];
+): CanvasItem[] {
+  return [...items, { id, kind: "text-box", position, text: "" }];
+}
 
-export declare function addStroke(
+export function addStroke(
   items: readonly CanvasItem[],
   id: string,
   points: StrokePath,
-): CanvasItem[];
+): CanvasItem[] {
+  return [...items, { id, kind: "stroke", points }];
+}
 
-export declare function moveCanvasItem(
+export function moveCanvasItem(
   items: readonly CanvasItem[],
   id: string,
   position: Point,
-): CanvasItem[];
+): CanvasItem[] {
+  return items.map((item) => item.id === id && item.kind !== "stroke" ? { ...item, position } : item);
+}
 
-export declare function updateNoteCard(
+export function updateNoteCard(
   items: readonly CanvasItem[],
   id: string,
   note: NoteSnapshot,
-): CanvasItem[];
+): CanvasItem[] {
+  return items.map((item) => item.id === id && item.kind === "note-card" ? { ...item, ...note } : item);
+}
 
-export declare function updateTextBox(
+export function updateTextBox(
   items: readonly CanvasItem[],
   id: string,
   text: string,
-): CanvasItem[];
+): CanvasItem[] {
+  return items.map((item) => item.id === id && item.kind === "text-box" ? { ...item, text } : item);
+}
 
-export declare function removeCanvasItem(items: readonly CanvasItem[], id: string): CanvasItem[];
+export function removeCanvasItem(items: readonly CanvasItem[], id: string): CanvasItem[] {
+  return items.filter((item) => item.id !== id);
+}
 
-export declare function undoLastStroke(items: readonly CanvasItem[]): CanvasItem[];
+export function undoLastStroke(items: readonly CanvasItem[]): CanvasItem[] {
+  const index = items.findLastIndex((item) => item.kind === "stroke");
+  return items.filter((_, itemIndex) => itemIndex !== index);
+}

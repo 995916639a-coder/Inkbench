@@ -2,7 +2,7 @@
 
 ## 怎么用
 
-在侧栏打开或新建画布。可以平移缩放、放置和编辑文本框与笔记卡片、移动对象、手绘和撤销最近一笔。卡片内容可以独立编辑。
+在侧栏打开或新建画布。选「文本」后点击画布放置文本框。选「添加笔记」并挑一篇笔记，再点击画布放置独立副本。双击对象或用编辑按钮修改内容，拖动顶部可移动对象。「画笔」用于手绘，「撤销最近一笔」用于移除最后一笔。选择平移工具或按住鼠标中键拖动画布，滚轮用于缩放。
 
 ## 代码怎么走
 
@@ -11,6 +11,7 @@
 | 文件或入口 | 调用方 | 输入与效果 |
 | --- | --- | --- |
 | `CanvasView`，`CanvasView.tsx` | `App` | 接收 `canvas`、`notes` 和 `onChange`。展示画布并报告变更。 |
+| `CanvasToolbar`，`CanvasToolbar.tsx` | `CanvasView` | 接收工具、可选笔记和缩放比例，通过回调报告工具操作。 |
 | `createCanvas()`，`workspace/workspace.ts` | `App` | 接收新画布 ID 和可选标题，创建空白画布。 |
 | `copyDocumentContent()`，`function/documents/document.ts` | `CanvasView` | 取得一份独立的笔记正文副本。 |
 | `screenToCanvas()`、`panViewport()`、`zoomViewport()`，`function/viewport/viewport.ts` | `CanvasView` | 换算放置坐标，或计算更新后的视口。 |

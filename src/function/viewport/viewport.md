@@ -9,6 +9,6 @@
 
 | 操作 | 调用方 | 输入 | 输出 |
 | --- | --- | --- | --- |
-| `screenToCanvas(point, viewport)` | `CanvasView` | 相对于画布显示区域左上角的指针位置和当前视口 | 画布坐标 |
+| `screenToCanvas(point, viewport)` | `CanvasView` | 相对于显示区域中心的指针位置和当前视口 | 画布坐标 |
 | `panViewport(viewport, delta)` | `CanvasView` | 当前视口和以像素计的平移量 | 偏移更新后的视口 |
 | `zoomViewport(viewport, anchor, scale)` | `CanvasView` | 当前视口、区域内的缩放锚点和目标缩放倍数 | 保持锚点下方画布位置的更新视口 |
