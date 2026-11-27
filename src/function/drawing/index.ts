@@ -1,1 +1,2 @@
-// 绘制能力的对外入口。
+export { finishStroke } from "./drawing";
+export type { StrokePath } from "./drawing";

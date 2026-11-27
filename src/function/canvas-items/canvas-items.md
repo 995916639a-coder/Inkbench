@@ -9,7 +9,11 @@
 
 | 操作 | 调用方 | 输入 | 输出 |
 | --- | --- | --- | --- |
-| 添加对象 | 画布页面 | 当前对象、类型、内容和放置坐标 | 包含新对象的画布数据 |
-| 编辑对象 | 画布页面 | 当前对象、目标 ID 和新的位置或内容 | 更新后的画布数据 |
-| 删除对象 | 画布页面 | 当前对象和目标 ID | 移除对象后的画布数据 |
-| 提交或撤销笔迹 | 画布页面 | 当前对象，以及提交时的一笔数据 | 更新后的画布数据 |
+| `addNoteCard(items, id, position, note)` | `CanvasView` | 对象列表、新 ID、放置坐标和已复制的笔记标题与正文 | 包含新笔记卡片的列表 |
+| `addTextBox(items, id, position)` | `CanvasView` | 对象列表、新 ID 和放置坐标 | 包含空白文本框的列表 |
+| `moveCanvasItem(items, id, position)` | `CanvasView` | 对象列表、文本框或卡片 ID 和新位置 | 位置更新后的列表 |
+| `updateNoteCard(items, id, note)` | `CanvasView` | 对象列表、卡片 ID 和新的卡片标题与正文 | 卡片内容更新后的列表 |
+| `updateTextBox(items, id, text)` | `CanvasView` | 对象列表、文本框 ID 和新文本 | 文本框更新后的列表 |
+| `removeCanvasItem(items, id)` | `CanvasView` | 对象列表和选中的对象 ID | 移除对象后的列表 |
+| `addStroke(items, id, points)` | `CanvasView` | 对象列表、新 ID 和一笔画布坐标 | 包含新笔迹的列表 |
+| `undoLastStroke(items)` | `CanvasView` | 对象列表 | 移除最新一笔后的列表 |

@@ -1,1 +1,9 @@
-// 向浏览器预览提供内存中的示例工作区。
+import type { Workspace, WorkspaceStorage } from "./workspace";
+
+export function createBrowserWorkspaceStorage(): WorkspaceStorage {
+  let workspace: Workspace | null = null;
+  return {
+    async loadWorkspace() { return workspace; },
+    async saveWorkspace(nextWorkspace) { workspace = nextWorkspace; },
+  };
+}

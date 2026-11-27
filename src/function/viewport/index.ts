@@ -1,1 +1,2 @@
-// 视口能力的对外入口。
+export { screenToCanvas, panViewport, zoomViewport } from "./viewport";
+export type { Point, CanvasViewport } from "./viewport";
