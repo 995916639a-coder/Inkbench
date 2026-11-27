@@ -6,7 +6,21 @@
 
 ## 界面预览
 
-<!-- 在此添加界面截图和演示视频。 -->
+### 可视化笔记
+
+用标题、列表和高亮代码块整理 ripgrep 的常用命令。
+
+![墨栈笔记编辑器展示 ripgrep 命令、代码高亮和选项说明](docs/media/inkbench-notes.png)
+
+### 思维导图
+
+把 Markdown 的标题和列表展开为可编辑的分支，用配色区分主题。
+
+![墨栈画布上按搜索入口、忽略规则、常用选项和输出格式展开的 ripgrep 导图](docs/media/inkbench-mind-map.png)
+
+### 操作演示
+
+导入 Markdown 生成导图，搜索「忽略规则」，再定位并编辑节点。图和视频均使用公开项目的演示资料。[观看操作视频（约 17 秒）](docs/media/inkbench-mind-map-demo.mp4?raw=true) · [示例项目 ripgrep](https://github.com/BurntSushi/ripgrep)
 
 ## 功能介绍
 
