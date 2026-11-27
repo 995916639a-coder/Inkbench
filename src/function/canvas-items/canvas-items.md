@@ -15,5 +15,5 @@
 | `updateNoteCard(items, id, note)` | `CanvasView` | 对象列表、卡片 ID 和新的卡片标题与正文 | 卡片内容更新后的列表 |
 | `updateTextBox(items, id, text)` | `CanvasView` | 对象列表、文本框 ID 和新文本 | 文本框更新后的列表 |
 | `removeCanvasItem(items, id)` | `CanvasView` | 对象列表和选中的对象 ID | 移除对象后的列表 |
-| `addStroke(items, id, points)` | `CanvasView` | 对象列表、新 ID 和一笔画布坐标 | 包含新笔迹的列表 |
+| `addStroke(items, id, points, annotation?)` | `CanvasView` | 对象列表、新 ID、画布坐标及可选的箭头样式与弯曲方向 | 包含新笔迹或箭头的列表 |
 | `undoLastStroke(items)` | `CanvasView` | 对象列表 | 移除最新一笔后的列表 |

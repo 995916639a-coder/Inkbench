@@ -12,6 +12,7 @@
 | `src/views/notes/NotesView.tsx` | `NotesView` 接收笔记，通过 `onChange` 返回更新后的笔记。 |
 | `src/views/canvas/CanvasView.tsx` | `CanvasView` 接收画布和可选择的笔记，通过 `onChange` 返回更新后的画布。 |
 | `src/views/canvas/CanvasToolbar.tsx` | `CanvasToolbar` 接收当前工具和缩放比例，通过回调请求切换工具、放置笔记、撤销笔迹和缩放。 |
+| `src/views/canvas/CanvasItemsLayer.tsx`、`MindMapLayer.tsx` | 分别显示普通画布对象和导图节点，页面负责协调交互和保存。 |
 | `src/views/updates/UpdatesDialog.tsx` | `UpdatesDialog` 将根目录的 `update.md` 渲染为侧栏更新公告。 |
 | `src/editor/RichTextEditor.tsx` | `RichTextEditor` 接收结构化正文，通过 `onChange` 返回更新后的正文。 |
 
@@ -21,6 +22,10 @@
 | --- | --- |
 | `src/function/documents/` | 创建笔记和复制正文。 |
 | `src/function/markdown-import/` | 将本地 Markdown 文件解析为笔记和画布卡片共用的结构化正文。 |
+| `src/function/mind-map/` | 管理节点和连线，从 Markdown 标题和列表生成导图。 |
+| `src/function/mind-map-export/` | 将导图节点和连线绘制成 PNG。 |
+| `src/function/workspace-search/` | 匹配工作区标题和内容，返回笔记、画布及导图节点的定位信息。 |
+| `src/function/canvas-duplicate/` | 复制画布及其内容，为导图节点和连线分配可独立编辑的 ID。 |
 | `src/function/canvas-items/` | 管理文本框、笔记卡片和已提交的笔迹。 |
 | `src/function/drawing/` | 将指针输入整理成一笔可保存的轨迹。 |
 | `src/function/viewport/` | 计算平移、缩放和坐标转换。 |
@@ -30,6 +35,8 @@
 例如，把笔记放到画布上时，工作台向画布页面提供笔记列表。用户选定笔记和放置点后，`CanvasView` 依次调用 `copyDocumentContent()`、`screenToCanvas()` 和 `addNoteCard()`，最后用 `onChange` 把更新后的画布交给 `App`。卡片拥有自己的标题、正文和位置。
 
 导入文件时，`App` 和 `CanvasView` 调用同一个 `importMarkdownFile()`。函数只处理用户选中的文件并返回标题与正文。将结果加入笔记或画布、保存工作区，仍由调用方处理。
+
+导图存放在画布的可选 `mindMap` 字段里，和笔记卡片、文本框及笔迹一起保存。已有画布可以直接打开，首次添加节点时才写入导图数据。
 
 未来可增加 `src/function/project-analysis/` 读取项目源码并生成节点和关系。工作台负责导入入口，画布页面负责组织展示和编辑。连线属于画布相关能力，分析规则留在项目分析模块。
 
@@ -51,7 +58,7 @@
 | `saveWorkspace(workspace)` | `App` | 接收完整工作区，写入完成后返回。 |
 | `toggleFullscreen()` | `App` | 切换 Electron 窗口全屏状态，并返回切换后的状态。 |
 
-工作区记录数据版本、笔记、画布和当前打开条目。每张画布保存自己的视口。读取或保存失败会报告错误，界面保留当前内容并允许重试。写入按顺序完成，应用退出前会等待最后一次保存。若写入失败，退出窗口提供返回编辑的选项。
+工作区记录数据版本、笔记、画布、当前打开条目以及侧栏是否收起。每张画布保存自己的视口。读取或保存失败会报告错误，界面保留当前内容并允许重试。写入按顺序完成，应用退出前会等待最后一次保存。若写入失败，退出窗口提供返回编辑的选项。
 
 ## 功能文档
 

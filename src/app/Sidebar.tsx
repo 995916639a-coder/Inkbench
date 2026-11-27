@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { Bell, ChevronDown, FileText, FileUp, LayoutTemplate, MoreHorizontal, NotebookPen, Pencil, Plus, Trash2 } from "lucide-react";
+import { Bell, ChevronDown, Copy, FileText, FileUp, LayoutTemplate, MoreHorizontal, NotebookPen, Pencil, Plus, Search, Trash2 } from "lucide-react";
 import { version } from "../../package.json";
 import type { WorkspaceEntry } from "../workspace/workspace";
 
@@ -13,9 +13,11 @@ export interface SidebarProps {
   onCreate: (kind: WorkspaceEntry["kind"]) => void;
   onOpen: (entry: WorkspaceEntry) => void;
   onRename: (entry: WorkspaceEntry, title: string) => void;
+  onDuplicateCanvas: (id: string) => void;
   onDelete: (entry: WorkspaceEntry) => void;
   onShowUpdates: () => void;
   onImportMarkdown?: (file: File) => void;
+  onSearch?: () => void;
 }
 
 const sections = [
@@ -23,8 +25,11 @@ const sections = [
   { kind: "canvas", label: "画布", icon: LayoutTemplate },
 ] as const;
 
-export function Sidebar({ entries, activeEntry, onCreate, onOpen, onRename, onDelete, onShowUpdates, onImportMarkdown }: SidebarProps) {
+export function Sidebar({
+  entries, activeEntry, onCreate, onOpen, onRename, onDuplicateCanvas, onDelete, onShowUpdates, onImportMarkdown, onSearch,
+}: SidebarProps) {
   const [menu, setMenu] = useState<string | null>(null);
+  const [menuAbove, setMenuAbove] = useState(false);
   const [renaming, setRenaming] = useState<string | null>(null);
   const aside = useRef<HTMLElement>(null);
   const markdownInput = useRef<HTMLInputElement>(null);
@@ -67,6 +72,10 @@ export function Sidebar({ entries, activeEntry, onCreate, onOpen, onRename, onDe
           if (file) onImportMarkdown?.(file);
         }} />
     </div>
+    <button type="button" className="sidebar-search" title="搜索工作区（Ctrl+K）" aria-haspopup="dialog"
+      disabled={!onSearch} onClick={() => { setMenu(null); onSearch?.(); }}>
+      <Search size={15} /><span>搜索工作区</span><kbd>Ctrl K</kbd>
+    </button>
     <nav className="file-list" aria-label="笔记和画布">
       {sections.map(({ kind, label, icon: Icon }) => (
         <section className="file-section" key={kind}>
@@ -92,11 +101,19 @@ export function Sidebar({ entries, activeEntry, onCreate, onOpen, onRename, onDe
                     onClick={() => { setMenu(null); onOpen(entry); }}><Icon size={16} /><span>{title}</span></button>
                   <div className="file-options" data-sidebar-menu>
                     <button type="button" className="icon-button file-options-button" aria-label={`${title}的选项`}
-                      aria-expanded={menu === entry.id} onClick={() => setMenu(menu === entry.id ? null : entry.id)}>
+                      aria-expanded={menu === entry.id} onClick={(event) => {
+                        const row = event.currentTarget.getBoundingClientRect();
+                        const region = event.currentTarget.closest(".file-list")?.getBoundingClientRect();
+                        setMenuAbove(Boolean(region && region.bottom - row.bottom < 115 && row.top - region.top > 115));
+                        setMenu(menu === entry.id ? null : entry.id);
+                      }}>
                       <MoreHorizontal size={16} />
                     </button>
-                    {menu === entry.id && <div className="sidebar-menu row-menu">
+                    {menu === entry.id && <div className={`sidebar-menu row-menu${menuAbove ? " is-above" : ""}`}>
                       <button type="button" onClick={() => { setMenu(null); setRenaming(entry.id); }}><Pencil size={15} /> 重命名</button>
+                      {kind === "canvas" && <button type="button" onClick={() => { setMenu(null); onDuplicateCanvas(entry.id); }}>
+                        <Copy size={15} /> 复制画布
+                      </button>}
                       <button type="button" className="destructive-text" onClick={() => { setMenu(null); onDelete(entry); }}>
                         <Trash2 size={15} /> 删除
                       </button>

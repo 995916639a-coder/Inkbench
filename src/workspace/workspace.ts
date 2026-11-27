@@ -1,11 +1,13 @@
 import type { CanvasItem } from "../function/canvas-items";
 import type { Note } from "../function/documents";
+import type { MindMap } from "../function/mind-map";
 import type { CanvasViewport } from "../function/viewport";
 
 export interface CanvasDocument {
   id: string;
   title: string;
   items: readonly CanvasItem[];
+  mindMap?: MindMap;
   viewport: CanvasViewport;
 }
 
@@ -19,6 +21,7 @@ export interface Workspace {
   notes: readonly Note[];
   canvases: readonly CanvasDocument[];
   activeEntry: WorkspaceEntry | null;
+  sidebarCollapsed?: boolean;
 }
 
 export interface WorkspaceStorage {

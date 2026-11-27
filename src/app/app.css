@@ -32,6 +32,7 @@ button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-
   height: 100dvh;
   overflow: hidden;
 }
+.app-shell.is-sidebar-collapsed { grid-template-columns: minmax(0, 1fr); }
 .sidebar {
   z-index: 2;
   display: flex;
@@ -53,7 +54,24 @@ button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-
 }
 .brand-name { font-size: 18px; font-weight: 700; line-height: 1.25; letter-spacing: .04em; }
 .brand-subtitle { margin-top: 2px; color: var(--muted); font-size: 12px; line-height: 1.25; }
-.sidebar-create { position: relative; margin: 0 3px 24px; }
+.sidebar-create { position: relative; margin: 0 3px 10px; }
+.sidebar-search {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  min-height: 31px;
+  margin: 0 3px 12px;
+  padding: 0 7px;
+  border: 1px solid #e0e1d7;
+  border-radius: 7px;
+  background: transparent;
+  color: var(--muted);
+  font-size: 12px;
+  white-space: nowrap;
+}
+.sidebar-search:hover:not(:disabled) { background: var(--hover); color: var(--ink); }
+.sidebar-search svg { flex: none; }
+.sidebar-search kbd { margin-left: auto; font: 10px var(--mono); }
 .create-button, .primary-button, .secondary-button, .danger-button {
   display: inline-flex;
   align-items: center;
@@ -139,6 +157,7 @@ button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-
   box-shadow: var(--popover-shadow);
 }
 .row-menu { left: auto; right: 4px; min-width: 113px; }
+.row-menu.is-above { top: auto; bottom: calc(100% + 5px); }
 .sidebar-menu button {
   display: flex;
   align-items: center;
@@ -201,6 +220,8 @@ button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-
   background: #fbfaf6;
 }
 .breadcrumbs { display: flex; align-items: center; gap: 9px; font-size: 13px; min-width: 0; }
+.workbench-location { display: flex; align-items: center; gap: 12px; min-width: 0; }
+.sidebar-toggle { margin-left: -5px; }
 .breadcrumbs > svg { flex: none; color: #8d9286; }
 .breadcrumbs > span:last-child { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .breadcrumb-home { display: flex; gap: 7px; align-items: center; color: var(--muted); white-space: nowrap; }
@@ -312,6 +333,7 @@ button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-
   .brand-name { font-size: 15px; }
   .brand-subtitle { font-size: 10px; }
   .sidebar-version { display: none; }
+  .sidebar-search kbd { display: none; }
   .workbench-header { padding-inline: 9px; }
   .workbench-actions { gap: 4px; }
   .save-status { font-size: 0; }
