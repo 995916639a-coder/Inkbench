@@ -1,6 +1,6 @@
 import { ArrowLeft, ArrowUpRight, BookOpen, Circle, Download, FileUp, Focus, Hand, Languages, Link2, List, Minus, MousePointer2, Network, PenLine, Plus, RectangleHorizontal, Redo2, Rows3, Type, Undo2 } from "lucide-react";
 import { useTranslation } from "../../i18n";
-import type { ContentLanguage } from "../../function/note-translation";
+import type { ContentLanguage } from "../../function/mind-map-translation";
 import type { Note } from "../../function/documents";
 import { annotationArrowPath } from "../../function/drawing";
 import type { ArrowBend } from "../../function/drawing";

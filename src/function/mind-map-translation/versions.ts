@@ -1,4 +1,3 @@
-import type { Note, NoteContent } from "../documents";
 import type { MindMap } from "../mind-map";
 import type { TranslationDirection } from "./translation";
 
@@ -20,17 +19,6 @@ export function translatedVersion<T>(direction: TranslationDirection, alternate:
 
 function otherLanguage(language: ContentLanguage): ContentLanguage {
   return language === "zh-CN" ? "en" : "zh-CN";
-}
-
-export function applyNoteTranslation(note: Note, translated: NoteContent, direction: TranslationDirection): Note {
-  const { title, content } = note;
-  return { ...note, title: translated.title, content: translated.content, translation: translatedVersion(direction, { title, content }) };
-}
-
-export function switchNoteTranslation(note: Note): Note {
-  const { translation, title, content } = note;
-  if (!translation) return note;
-  return { ...note, ...translation.alternate, translation: { language: otherLanguage(translation.language), alternate: { title, content } } };
 }
 
 export function captureMindMapLabels(map: MindMap): MindMapLabels {

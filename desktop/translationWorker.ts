@@ -1,6 +1,6 @@
 import { env, pipeline } from "@huggingface/transformers";
 import type { TranslationPipeline } from "@huggingface/transformers";
-import type { TranslationDirection } from "../src/function/note-translation";
+import type { TranslationDirection } from "../src/function/mind-map-translation";
 
 env.localModelPath = process.argv[2];
 env.allowRemoteModels = false;

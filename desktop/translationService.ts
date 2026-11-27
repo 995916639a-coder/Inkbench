@@ -1,6 +1,6 @@
 import { utilityProcess } from "electron";
 import type { UtilityProcess } from "electron";
-import { isTranslationDirection } from "../src/function/note-translation";
+import { isTranslationDirection } from "../src/function/mind-map-translation";
 
 export function createTranslationService(workerPath: string, modelsPath: string) {
   let worker: UtilityProcess | undefined;

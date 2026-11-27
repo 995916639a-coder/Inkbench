@@ -1,5 +1,5 @@
 import type { WorkspaceStorage } from "./workspace";
-import type { TranslateText } from "../function/note-translation";
+import type { TranslateText } from "../function/mind-map-translation";
 
 export const desktopChannels = {
   loadWorkspace: "inkbench:workspace:load",

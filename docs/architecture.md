@@ -31,7 +31,7 @@
 | `src/function/canvas-items/` | 管理文本框、笔记卡片和已提交的笔迹。 |
 | `src/function/drawing/` | 将指针输入整理成一笔可保存的轨迹。 |
 | `src/function/viewport/` | 计算平移、缩放和坐标转换。 |
-| `src/function/note-translation/` | 按原有结构生成译文，保存并切换笔记和导图的中英文内容。 |
+| `src/function/mind-map-translation/` | 翻译节点文字和连线标签，保存并切换导图的中英文。 |
 
 工作台组装页面，页面调用能力，底层能力接收数据并返回结果。能力通过各自的 `index.ts` 提供上层实际使用的入口。React 组件和业务操作以具名函数为主，数据结构用 TypeScript 类型。
 

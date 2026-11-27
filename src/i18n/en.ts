@@ -1,5 +1,4 @@
 export const english = {
-  "翻译笔记": "Translate note",
   "翻译导图": "Translate mind map",
   "关闭翻译": "Close translation",
   "翻译方向": "Translation direction",

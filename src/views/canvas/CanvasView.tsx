@@ -16,8 +16,8 @@ import {
 } from "../../function/mind-map";
 import type { MindMap, MindMapNode, MindMapShape } from "../../function/mind-map";
 import { renderMindMapPng } from "../../function/mind-map-export";
-import { captureMindMapLabels, switchMindMapTranslation, translatedVersion } from "../../function/note-translation";
-import type { TranslationDirection } from "../../function/note-translation";
+import { captureMindMapLabels, switchMindMapTranslation, translatedVersion } from "../../function/mind-map-translation";
+import type { TranslationDirection } from "../../function/mind-map-translation";
 import { fitViewport, panViewport, screenToCanvas, zoomViewport } from "../../function/viewport";
 import type { CanvasViewport, Point } from "../../function/viewport";
 import type { CanvasDocument } from "../../workspace/workspace";
@@ -36,7 +36,7 @@ export interface CanvasViewProps {
   notes: readonly Note[];
   onChange: (canvas: CanvasDocument) => void;
   revealNode?: { nodeId: string };
-  onTranslate?: (source: CanvasDocument, replace: (map: MindMap, direction: TranslationDirection) => boolean) => void;
+  onTranslate?: (map: MindMap, replace: (map: MindMap, direction: TranslationDirection) => boolean) => void;
 }
 
 type NoteContent = Pick<Note, "title" | "content">;
@@ -307,7 +307,7 @@ export function CanvasView({ canvas, notes, onChange, revealNode, onTranslate }:
       applyMapLanguage(next.mindMap, next.mapTranslation);
       return;
     }
-    onTranslate?.(canvas, (translated, direction) => {
+    onTranslate?.(mindMap, (translated, direction) => {
       if (latest.current.canvas.mindMap !== mindMap) return false;
       applyMapLanguage(translated, translatedVersion(direction, captureMindMapLabels(mindMap)));
       return true;

@@ -11,4 +11,4 @@
 
 ## 界面语言
 
-在「界面语言」下选择简体中文或 English。工作台、画布工具和编辑器的界面文案会立即切换，应用会在本地记住选择。`setInterfaceLanguage(language)` 由设置页调用，英语词条集中在 `src/i18n/en.ts`。可在笔记或思维导图中发起独立的内容翻译。[笔记和导图翻译](../../function/note-translation/note-translation.md)
+在「界面语言」下选择简体中文或 English。工作台、画布工具和编辑器的界面文案会立即切换，应用会在本地记住选择。`setInterfaceLanguage(language)` 由设置页调用，英语词条集中在 `src/i18n/en.ts`。[思维导图翻译](../../function/mind-map-translation/mind-map-translation.md)
