@@ -1,1 +1,9 @@
-// 组合笔记标题和可视化编辑器，把内容更新提交给工作台。
+import type { ReactElement } from "react";
+import type { Note } from "../../function/documents";
+
+export interface NotesViewProps {
+  note: Note;
+  onChange: (note: Note) => void;
+}
+
+export declare function NotesView(props: NotesViewProps): ReactElement;

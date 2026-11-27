@@ -6,15 +6,14 @@
 
 ## 代码怎么走
 
-画布页面根据当前工具处理用户输入。放置笔记时，它从工作台提供的列表取得内容，依次复制正文、换算坐标并创建卡片。完成后将更新交给工作台保存。
+画布页面根据当前工具处理用户输入。放置笔记时，依次调用 `copyDocumentContent()`、`screenToCanvas()` 和 `addNoteCard()`。完成手绘时，调用 `finishStroke()` 整理轨迹，再调用 `addStroke()` 提交笔迹。每次变更通过 `onChange` 把更新后的画布交给工作台。
 
 | 文件或入口 | 调用方 | 输入与效果 |
 | --- | --- | --- |
-| `CanvasView.tsx` 中的画布页面 | 工作台 | 接收当前画布和可选择的笔记，展示画布并报告变更。 |
-| `function/documents` | 画布页面 | 取得一份独立的笔记正文副本。 |
-| `function/viewport` | 画布页面 | 更新视口，或把鼠标位置换算成画布坐标。 |
-| `function/canvas-items` | 画布页面 | 添加、移动、更新或删除对象，提交或撤销笔迹。 |
-| `function/drawing` | 画布页面 | 将指针轨迹整理成一笔。 |
-| `editor/RichTextEditor.tsx` | 画布页面 | 编辑笔记卡片自身的正文。 |
-
-具体函数签名和组件参数在接口审阅阶段补充。
+| `CanvasView`，`CanvasView.tsx` | `App` | 接收 `canvas`、`notes` 和 `onChange`。展示画布并报告变更。 |
+| `createCanvas()`，`workspace/workspace.ts` | `App` | 接收新画布 ID 和可选标题，创建空白画布。 |
+| `copyDocumentContent()`，`function/documents/document.ts` | `CanvasView` | 取得一份独立的笔记正文副本。 |
+| `screenToCanvas()`、`panViewport()`、`zoomViewport()`，`function/viewport/viewport.ts` | `CanvasView` | 换算放置坐标，或计算更新后的视口。 |
+| `addNoteCard()` 等对象操作，`function/canvas-items/canvasItems.ts` | `CanvasView` | 管理画布对象和笔迹，返回更新后的对象列表。 |
+| `finishStroke()`，`function/drawing/drawing.ts` | `CanvasView` | 根据坐标序列生成一笔可提交的轨迹。 |
+| `RichTextEditor`，`editor/RichTextEditor.tsx` | `CanvasView` | 接收笔记卡片的正文，报告更新后的正文。 |

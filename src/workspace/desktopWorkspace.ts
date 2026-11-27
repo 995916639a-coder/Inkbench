@@ -1,1 +1,11 @@
-// 通过 Electron 提供的桌面接口加载和保存本地工作区。
+import type { WorkspaceStorage } from "./workspace";
+
+export interface DesktopBridge extends WorkspaceStorage {
+  toggleFullscreen(): Promise<boolean>;
+}
+
+declare global {
+  interface Window {
+    inkbench?: DesktopBridge;
+  }
+}

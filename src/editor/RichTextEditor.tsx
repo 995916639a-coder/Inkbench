@@ -1,1 +1,9 @@
-// 为笔记页面和画布卡片提供共用的可视化正文编辑器。
+import type { ReactElement } from "react";
+import type { DocumentContent } from "../function/documents";
+
+export interface RichTextEditorProps {
+  content: DocumentContent;
+  onChange: (content: DocumentContent) => void;
+}
+
+export declare function RichTextEditor(props: RichTextEditorProps): ReactElement;

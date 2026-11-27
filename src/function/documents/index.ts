@@ -1,1 +1,1 @@
-// 文档能力的对外入口。
+export type { Note, DocumentContent, createNote, copyDocumentContent } from "./document";

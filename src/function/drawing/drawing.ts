@@ -1,1 +1,5 @@
-// 将绘制期间收集的画布坐标整理为一笔可提交的轨迹。
+import type { Point } from "../viewport";
+
+export type StrokePath = readonly [Point, ...Point[]];
+
+export declare function finishStroke(points: readonly Point[]): StrokePath | null;

@@ -1,1 +1,11 @@
-// 组织画布、工具栏和指针交互，调用底层能力生成画布更新。
+import type { ReactElement } from "react";
+import type { Note } from "../../function/documents";
+import type { CanvasDocument } from "../../workspace/workspace";
+
+export interface CanvasViewProps {
+  canvas: CanvasDocument;
+  notes: readonly Note[];
+  onChange: (canvas: CanvasDocument) => void;
+}
+
+export declare function CanvasView(props: CanvasViewProps): ReactElement;

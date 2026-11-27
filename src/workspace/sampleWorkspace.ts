@@ -1,1 +1,3 @@
-// 提供桌面版首次启动和浏览器预览共用的示例数据。
+import type { Workspace } from "./workspace";
+
+export declare function createSampleWorkspace(): Workspace;

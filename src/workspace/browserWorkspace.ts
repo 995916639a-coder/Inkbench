@@ -1,1 +1,3 @@
-// 向浏览器预览提供内存中的示例工作区。
+import type { WorkspaceStorage } from "./workspace";
+
+export declare function createBrowserWorkspaceStorage(): WorkspaceStorage;
