@@ -8,21 +8,14 @@
 
 ## 界面预览
 
-### 可视化笔记
+<p align="center">
+  <img src="docs/media/inkbench-notes.png" width="25%" alt="墨栈笔记编辑器展示 ripgrep 命令、代码高亮和选项说明" />
+  <img src="docs/media/inkbench-api-canvas.png" width="25%" alt="墨栈内置 API 联调画布，包含设备接口笔记、两个文本框和手绘箭头" />
+</p>
 
-用标题、列表和高亮代码块整理 ripgrep 的常用命令。
+![思维导图操作演示：导入 Markdown，搜索并编辑节点](docs/media/inkbench-mind-map-demo.gif)
 
-![墨栈笔记编辑器展示 ripgrep 命令、代码高亮和选项说明](docs/media/inkbench-notes.png)
-
-### 自由画布
-
-打开内置的「API 联调画布」，在同一张画布上查看接口笔记、待确认事项和模拟环境配置。
-
-![墨栈内置 API 联调画布，包含设备接口笔记、两个文本框和手绘箭头](docs/media/inkbench-api-canvas.png)
-
-### 思维导图操作演示
-
-视频使用根据 REA 公开文档整理的 Markdown 提纲，用模拟鼠标演示导入生成 37 个节点的导图、搜索「证据记录」，再将节点改为「分析证据」。[观看操作视频（约 17 秒）](docs/media/inkbench-mind-map-demo.mp4?raw=true) · [REA 公开文档](https://github.com/morluto/rea/tree/main/docs)
+约 17 秒的演示使用根据 REA 公开文档整理的 Markdown 提纲，展示如何导入生成 37 个节点的导图、搜索「证据记录」，再将节点改为「分析证据」。[REA 公开文档](https://github.com/morluto/rea/tree/main/docs)
 
 ## 功能介绍
 
