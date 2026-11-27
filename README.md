@@ -12,15 +12,15 @@
 
 ![墨栈笔记编辑器展示 ripgrep 命令、代码高亮和选项说明](docs/media/inkbench-notes.png)
 
-### 思维导图
+### 自由画布
 
-把 Markdown 的标题和列表展开为可编辑的分支，用配色区分主题。
+打开内置的「API 联调画布」，在同一张画布上查看接口笔记、待确认事项和模拟环境配置。
 
-![墨栈画布上按搜索入口、忽略规则、常用选项和输出格式展开的 ripgrep 导图](docs/media/inkbench-mind-map.png)
+![墨栈内置 API 联调画布，包含设备接口笔记、两个文本框和手绘箭头](docs/media/inkbench-api-canvas.png)
 
-### 操作演示
+### 思维导图操作演示
 
-导入 Markdown 生成导图，搜索「忽略规则」，再定位并编辑节点。图和视频均使用公开项目的演示资料。[观看操作视频（约 17 秒）](docs/media/inkbench-mind-map-demo.mp4?raw=true) · [示例项目 ripgrep](https://github.com/BurntSushi/ripgrep)
+视频使用根据 REA 公开文档整理的 Markdown 提纲，用模拟鼠标演示导入生成 37 个节点的导图、搜索「证据记录」，再将节点改为「分析证据」。[观看操作视频（约 17 秒）](docs/media/inkbench-mind-map-demo.mp4?raw=true) · [REA 公开文档](https://github.com/morluto/rea/tree/main/docs)
 
 ## 功能介绍
 
