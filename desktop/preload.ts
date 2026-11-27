@@ -5,7 +5,7 @@ import type { DesktopBridge } from "../src/workspace/desktopWorkspace";
 const bridge: DesktopBridge = {
   loadWorkspace: () => ipcRenderer.invoke(desktopChannels.loadWorkspace),
   saveWorkspace: (workspace) => ipcRenderer.invoke(desktopChannels.saveWorkspace, workspace),
-  toggleFullscreen: () => ipcRenderer.invoke(desktopChannels.toggleFullscreen),
+  toggleMaximized: () => ipcRenderer.invoke(desktopChannels.toggleMaximized),
 };
 
 contextBridge.exposeInMainWorld("inkbench", bridge);

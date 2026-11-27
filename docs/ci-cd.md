@@ -19,4 +19,4 @@ GitHub Actions 在 Linux 上检查推送和 Pull Request。合并到 `main` 后�
 
 发布版本取自 `package.json`，标签指向产出安装包的提交，说明取自 `update.md` 的同版本小节。以后发布新版本时一并更新版本号和对应公告。同一版本的后续合并继续生成 Artifacts，已有 Release 的安装包保留。
 
-本机也可以运行 `npm run package:linux`，在 `release/` 生成 `.deb`。安装后检查启动即全屏、可切换全屏，以及重启后工作区可恢复。
+本机也可以运行 `npm run package:linux`，在 `release/` 生成 `.deb`。安装后检查窗口启动时最大化、可按 F11 还原窗口，并确认重启后工作区可恢复。

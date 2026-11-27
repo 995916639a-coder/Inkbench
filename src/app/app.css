@@ -245,7 +245,7 @@ button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-
   color: var(--green);
   background: #e7eee5;
 }
-.fullscreen-button { border: 1px solid var(--border); background: var(--paper); width: 33px; height: 32px; }
+.window-size-button { border: 1px solid var(--border); background: var(--paper); width: 33px; height: 32px; }
 .workbench-alert {
   z-index: 5;
   position: absolute;

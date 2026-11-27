@@ -10,19 +10,11 @@ const root = document.getElementById("root");
 if (!root) throw new Error("Inkbench root is missing");
 
 const bridge = window.inkbench;
-const toggleBrowserFullscreen = async () => {
-  if (document.fullscreenElement) {
-    await document.exitFullscreen();
-  } else {
-    await document.documentElement.requestFullscreen();
-  }
-  return Boolean(document.fullscreenElement);
-};
 
 createRoot(root).render(
   <App
     storage={bridge ?? createBrowserWorkspaceStorage()}
     isPreview={!bridge}
-    toggleFullscreen={bridge?.toggleFullscreen ?? (document.fullscreenEnabled ? toggleBrowserFullscreen : undefined)}
+    toggleMaximized={bridge?.toggleMaximized}
   />,
 );

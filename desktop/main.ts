@@ -3,6 +3,7 @@ import type { IpcMainInvokeEvent } from "electron";
 import { join } from "node:path";
 import { desktopChannels } from "../src/workspace/desktopWorkspace";
 import type { Workspace } from "../src/workspace/workspace";
+import { registerWindowShortcuts, toggleMaximized } from "./window";
 import { createWorkspaceStore } from "./workspaceStore";
 
 let mainWindow: BrowserWindow | null = null;
@@ -15,12 +16,6 @@ function getSenderWindow(event: IpcMainInvokeEvent): BrowserWindow {
   return mainWindow;
 }
 
-function toggleFullscreen(window: BrowserWindow): boolean {
-  const fullscreen = !window.isFullScreen();
-  window.setFullScreen(fullscreen);
-  return fullscreen;
-}
-
 async function start(): Promise<void> {
   const store = createWorkspaceStore(join(app.getPath("userData"), "workspace.json"));
   ipcMain.handle(desktopChannels.loadWorkspace, (event) => {
@@ -31,7 +26,7 @@ async function start(): Promise<void> {
     getSenderWindow(event);
     return store.saveWorkspace(workspace);
   });
-  ipcMain.handle(desktopChannels.toggleFullscreen, (event) => toggleFullscreen(getSenderWindow(event)));
+  ipcMain.handle(desktopChannels.toggleMaximized, (event) => toggleMaximized(getSenderWindow(event)));
 
   Menu.setApplicationMenu(null);
   const window = new BrowserWindow({
@@ -42,7 +37,6 @@ async function start(): Promise<void> {
     minHeight: 600,
     icon: join(__dirname, "../renderer/inkbench.png"),
     backgroundColor: "#f9f8f4",
-    fullscreen: true,
     show: false,
     webPreferences: {
       preload: join(__dirname, "preload.cjs"),
@@ -52,12 +46,11 @@ async function start(): Promise<void> {
     },
   });
   mainWindow = window;
-  window.once("ready-to-show", () => window.show());
-  window.webContents.on("before-input-event", (event, input) => {
-    if (input.key !== "F11") return;
-    event.preventDefault();
-    if (input.type === "keyDown" && !input.isAutoRepeat) toggleFullscreen(window);
+  window.once("ready-to-show", () => {
+    window.maximize();
+    window.show();
   });
+  registerWindowShortcuts(window);
   window.webContents.on("will-navigate", (event) => event.preventDefault());
   window.webContents.setWindowOpenHandler(({ url }) => {
     if (/^(https?:\/\/|mailto:)/i.test(url)) void shell.openExternal(url).catch(() => {});
