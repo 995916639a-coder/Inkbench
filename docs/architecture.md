@@ -15,6 +15,7 @@
 | `src/views/canvas/CanvasItemsLayer.tsx`、`MindMapLayer.tsx` | 分别显示普通画布对象和导图节点，页面负责协调交互和保存。 |
 | `src/views/updates/UpdatesDialog.tsx` | `UpdatesDialog` 将根目录的 `update.md` 渲染为侧栏更新公告。 |
 | `src/views/settings/SettingsDialog.tsx` | `SettingsDialog` 提供桌面界面缩放控件，通过 `WindowZoom` 读写窗口比例。 |
+| `src/views/translation/TranslationDialog.tsx`、`src/i18n/` | 翻译弹窗展示译文，界面词条和语言偏好由 i18next 管理。 |
 | `src/editor/RichTextEditor.tsx` | `RichTextEditor` 接收结构化正文，通过 `onChange` 返回更新后的正文。 |
 
 ## 底层能力
@@ -30,6 +31,7 @@
 | `src/function/canvas-items/` | 管理文本框、笔记卡片和已提交的笔迹。 |
 | `src/function/drawing/` | 将指针输入整理成一笔可保存的轨迹。 |
 | `src/function/viewport/` | 计算平移、缩放和坐标转换。 |
+| `src/function/note-translation/` | 从笔记和思维导图提取可翻译文字，将译文写回原结构的副本。 |
 
 工作台组装页面，页面调用能力，底层能力接收数据并返回结果。能力通过各自的 `index.ts` 提供上层实际使用的入口。React 组件和业务操作以具名函数为主，数据结构用 TypeScript 类型。
 
@@ -48,6 +50,7 @@
 | `desktop/main.ts` | 创建带系统标题栏的最大化窗口，初始化工作区存储并处理桌面请求。 |
 | `desktop/window.ts` | `registerWindowShortcuts(window)` 处理 F11 和界面缩放快捷键。界面缩放使用 Electron 的页面缩放，画布视口独立保存。 |
 | `desktop/preload.ts` | 将 `DesktopBridge` 提供给界面，用于加载、保存、管理窗口大小以及读取、调整和监听界面缩放。 |
+| `desktop/translationService.ts`、`desktop/translationWorker.ts` | 通过独立进程在 CPU 上运行安装包内的翻译模型，并通过桌面桥接返回译文。 |
 | `desktop/workspaceStore.ts` | `createWorkspaceStore(filePath)` 返回文件存储，在应用数据目录读写 `workspace.json`。保存时写入同目录临时文件，再替换正式文件。 |
 | `src/workspace/workspace.ts` | 定义 `Workspace`、`CanvasDocument` 和加载、保存接口。`createCanvas(id, title?)` 创建空白画布。 |
 | `src/workspace/desktopWorkspace.ts` | 定义桌面接口 `DesktopBridge`。桌面窗口通过 `window.inkbench` 提供该接口。 |

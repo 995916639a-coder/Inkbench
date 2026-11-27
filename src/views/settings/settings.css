@@ -20,6 +20,8 @@
 }
 .settings-header h1 { margin: 0; font-size: 17px; }
 .settings-content { padding: 20px 21px; }
+.settings-language { margin-bottom: 16px; padding-bottom: 16px; border-bottom: 1px solid var(--border); font-size: 14px; font-weight: 650; }
+.settings-language select { min-height: 34px; border: 1px solid var(--border); border-radius: 7px; background: var(--paper); padding: 0 8px; }
 .settings-row { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px 14px; }
 .settings-row h2 { margin: 0 0 4px; font-size: 14px; }
 .settings-row p { margin: 0; font-size: 13px; color: var(--muted); }

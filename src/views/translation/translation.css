@@ -1,0 +1,32 @@
+.translation-dialog {
+  width: min(720px, calc(100% - 32px));
+  max-height: calc(100% - 32px);
+  padding: 0;
+  border: 1px solid var(--border);
+  border-radius: 13px;
+  background: var(--paper);
+  color: var(--ink);
+  box-shadow: var(--popover-shadow);
+}
+.translation-dialog[open] { display: flex; flex-direction: column; }
+.translation-dialog::backdrop { background: #262c225c; }
+.translation-header, .translation-footer {
+  flex: none;
+  display: flex;
+  align-items: center;
+  padding: 13px 21px;
+}
+.translation-header { justify-content: space-between; border-bottom: 1px solid var(--border); }
+.translation-header h1 { display: flex; align-items: center; gap: 9px; margin: 0; font-size: 17px; }
+.translation-header h1 svg { color: var(--green); }
+.translation-body { min-height: 0; overflow: auto; padding: 17px 21px; }
+.translation-actions, .translation-actions label { display: flex; flex-wrap: wrap; align-items: center; gap: 9px; }
+.translation-actions label { font-size: 13px; }
+.translation-actions select { min-height: 36px; padding: 0 7px; border: 1px solid var(--border); border-radius: 7px; background: var(--paper); }
+.translation-status { color: var(--muted); font-size: 13px; }
+.translation-preview { margin-top: 16px; padding-top: 12px; border-top: 1px solid var(--border); overflow-wrap: anywhere; }
+.translation-preview h2 { margin: 0 0 8px; font-size: 17px; }
+.translation-labels { width: 100%; table-layout: fixed; border-collapse: collapse; font-size: 13px; }
+.translation-labels :is(th, td) { padding: 8px 7px; border-bottom: 1px solid var(--border); text-align: start; }
+.translation-labels th { color: var(--green); }
+.translation-footer { justify-content: flex-end; border-top: 1px solid var(--border); }

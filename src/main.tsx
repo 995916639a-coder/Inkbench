@@ -17,5 +17,6 @@ createRoot(root).render(
     isPreview={!bridge}
     toggleMaximized={bridge?.toggleMaximized}
     windowZoom={bridge?.zoom}
+    translation={bridge?.translation}
   />,
 );

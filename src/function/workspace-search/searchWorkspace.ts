@@ -28,12 +28,12 @@ function excerpt(text: string, query: string): string | undefined {
   return `${leading ? "…" : ""}${line.slice(leading, trailing)}${trailing < line.length ? "…" : ""}`;
 }
 
-export function searchWorkspace(workspace: Workspace, input: string): WorkspaceSearchResult[] {
+export function searchWorkspace(workspace: Workspace, input: string, untitled = { note: "未命名笔记", canvas: "未命名画布" }): WorkspaceSearchResult[] {
   const query = compact(input).toLowerCase();
   const titles: WorkspaceSearchResult[] = [];
   const contents: WorkspaceSearchResult[] = [];
   for (const note of workspace.notes) {
-    const title = note.title || "未命名笔记";
+    const title = note.title || untitled.note;
     const entry = { kind: "note" as const, id: note.id };
     if (!query || compact(title).toLowerCase().includes(query)) {
       titles.push({ entry, title });
@@ -43,7 +43,7 @@ export function searchWorkspace(workspace: Workspace, input: string): WorkspaceS
     }
   }
   for (const canvas of workspace.canvases) {
-    const title = canvas.title || "未命名画布";
+    const title = canvas.title || untitled.canvas;
     const entry = { kind: "canvas" as const, id: canvas.id };
     if (!query || compact(title).toLowerCase().includes(query)) {
       titles.push({ entry, title });

@@ -11,4 +11,4 @@
 | 文件或入口 | 调用方 | 输入与效果 |
 | --- | --- | --- |
 | `index.ts` | `App` | 导出画布复制入口。 |
-| `duplicateCanvas(source, existingTitles, nextId?)`，`duplicateCanvas.ts` | `App` | 接收画布、现有标题和可选 ID 生成函数，返回可加入工作区的独立副本。 |
+| `duplicateCanvas(source, existingTitles, nextId?, title?)`，`duplicateCanvas.ts` | `App` | 接收画布、现有标题、可选 ID 生成函数和副本标题，返回独立副本。普通复制和翻译导图副本共用此函数。 |

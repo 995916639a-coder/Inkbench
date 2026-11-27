@@ -308,11 +308,14 @@ button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-
   border-radius: 13px;
   box-shadow: 0 2px 5px #35392a06;
 }
+.note-heading { display: flex; align-items: center; gap: 10px; margin-bottom: 21px; }
+.note-translate { color: var(--green); border: 1px solid var(--border); }
 .note-title {
   display: block;
   width: 100%;
   padding: 2px 0;
-  margin: 0 0 21px;
+  margin: 0;
+  min-width: 0;
   border: 0;
   border-bottom: 1px solid transparent;
   outline: none;

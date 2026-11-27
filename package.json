@@ -1,6 +1,6 @@
 {
   "name": "inkbench",
-  "version": "1.1.4",
+  "version": "1.2.0",
   "private": true,
   "description": "A local notebook and canvas for programmers",
   "author": {
@@ -18,9 +18,10 @@
     "dev": "vite --host 127.0.0.1 --strictPort",
     "typecheck": "tsc --noEmit",
     "test": "node scripts/test.mjs",
-    "build": "vite build && esbuild desktop/main.ts desktop/preload.ts --bundle --platform=node --target=node22 --format=cjs --out-extension:.js=.cjs --external:electron --outdir=dist/desktop",
-    "desktop": "npm run build && electron .",
-    "package:linux": "npm run build && electron-builder --linux deb"
+    "build": "vite build && esbuild desktop/main.ts desktop/preload.ts desktop/translationWorker.ts --bundle --platform=node --target=node22 --format=cjs --out-extension:.js=.cjs --external:electron --external:@huggingface/transformers --outdir=dist/desktop",
+    "prepare:models": "node scripts/prepare-translation-models.mjs",
+    "desktop": "npm run prepare:models && npm run build && electron .",
+    "package:linux": "npm run prepare:models && npm run build && electron-builder --linux deb"
   },
   "devDependencies": {
     "@fontsource-variable/dm-sans": "^5.2.0",
@@ -57,7 +58,24 @@
     },
     "files": [
       "dist/**/*",
-      "package.json"
+      "package.json",
+      "!**/onnxruntime-node/bin/**/{darwin,win32}/**",
+      "!**/onnxruntime-node/bin/**/linux/arm64/**",
+      "!**/onnxruntime-web/dist/*.wasm"
+    ],
+    "asarUnpack": [
+      "**/onnxruntime-node/bin/**",
+      "**/@img/**"
+    ],
+    "extraResources": [
+      {
+        "from": "translation-models",
+        "to": "translation-models",
+        "filter": [
+          "**/*",
+          "!**/*.tmp"
+        ]
+      }
     ],
     "linux": {
       "target": "deb",
@@ -66,5 +84,10 @@
       "category": "Office",
       "synopsis": "A local notebook and canvas for programmers"
     }
+  },
+  "dependencies": {
+    "@huggingface/transformers": "4.3.2",
+    "i18next": "27.2.9",
+    "react-i18next": "18.0.3"
   }
 }

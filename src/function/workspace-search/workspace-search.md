@@ -11,4 +11,4 @@
 | 文件或入口 | 调用方 | 输入与效果 |
 | --- | --- | --- |
 | `index.ts` | `WorkspaceSearchDialog` | 导出搜索函数和结果类型。 |
-| `searchWorkspace(workspace, input)`，`searchWorkspace.ts` | `WorkspaceSearchDialog` | 接收本地工作区和搜索词，返回有序条目、命中文本片段和可选节点 ID。 |
+| `searchWorkspace(workspace, input, untitled?)`，`searchWorkspace.ts` | `WorkspaceSearchDialog` | 接收本地工作区、搜索词和可选的本地化未命名标题，返回有序条目、命中文本片段和可选节点 ID。 |

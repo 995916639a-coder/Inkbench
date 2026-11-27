@@ -6,6 +6,10 @@ const bridge: DesktopBridge = {
   loadWorkspace: () => ipcRenderer.invoke(desktopChannels.loadWorkspace),
   saveWorkspace: (workspace) => ipcRenderer.invoke(desktopChannels.saveWorkspace, workspace),
   toggleMaximized: () => ipcRenderer.invoke(desktopChannels.toggleMaximized),
+  translation: {
+    translate: (direction, segments) => ipcRenderer.invoke(desktopChannels.translate, direction, segments),
+    cancel: () => ipcRenderer.invoke(desktopChannels.cancelTranslation),
+  },
   zoom: {
     getPercent: () => ipcRenderer.invoke(desktopChannels.getZoomPercent),
     setPercent: (percent) => ipcRenderer.invoke(desktopChannels.setZoomPercent, percent),

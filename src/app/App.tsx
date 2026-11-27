@@ -7,8 +7,12 @@ import { CanvasView } from "../views/canvas/CanvasView";
 import { NotesView } from "../views/notes/NotesView";
 import { WorkspaceSearchDialog } from "../views/search/WorkspaceSearchDialog";
 import { SettingsDialog } from "../views/settings/SettingsDialog";
+import { TranslationDialog } from "../views/translation/TranslationDialog";
+import type { TranslationSource } from "../views/translation/TranslationDialog";
 import { UpdatesDialog } from "../views/updates/UpdatesDialog";
-import type { WindowZoom } from "../workspace/desktopWorkspace";
+import { useTranslation } from "../i18n";
+import type { TranslationDirection } from "../function/note-translation";
+import type { DesktopTranslation, WindowZoom } from "../workspace/desktopWorkspace";
 import { createSampleWorkspace } from "../workspace/sampleWorkspace";
 import { createCanvas } from "../workspace/workspace";
 import type { Workspace, WorkspaceEntry, WorkspaceStorage } from "../workspace/workspace";
@@ -19,11 +23,13 @@ export interface AppProps {
   isPreview?: boolean;
   toggleMaximized?: () => Promise<void>;
   windowZoom?: WindowZoom;
+  translation?: DesktopTranslation;
 }
 
 type SaveStatus = "saved" | "saving" | "failed";
 
-export function App({ storage, isPreview = false, toggleMaximized, windowZoom }: AppProps) {
+export function App({ storage, isPreview = false, toggleMaximized, windowZoom, translation }: AppProps) {
+  const { t } = useTranslation();
   const current = useRef<Workspace | null>(null);
   const saveNumber = useRef(0);
   const [workspace, setWorkspace] = useState<Workspace | null>(null);
@@ -34,6 +40,7 @@ export function App({ storage, isPreview = false, toggleMaximized, windowZoom }:
   const [alert, setAlert] = useState<string | null>(null);
   const [importing, setImporting] = useState(false);
   const [sidebarDialog, setSidebarDialog] = useState<"updates" | "settings" | null>(null);
+  const [translationSource, setTranslationSource] = useState<TranslationSource | null>(null);
   const [searchOpen, setSearchOpen] = useState(false);
   const [canvasNode, setCanvasNode] = useState<{ canvasId: string; nodeId: string } | null>(null);
 
@@ -72,7 +79,7 @@ export function App({ storage, isPreview = false, toggleMaximized, windowZoom }:
   useEffect(() => {
     function handleShortcut(event: KeyboardEvent) {
       if (!(event.ctrlKey || event.metaKey) || event.altKey || event.shiftKey || event.isComposing
-        || !current.current || sidebarDialog || entryToDelete) return;
+        || !current.current || sidebarDialog || translationSource || entryToDelete) return;
       if (event.key.toLowerCase() === "k") {
         event.preventDefault();
         setSearchOpen(true);
@@ -83,7 +90,7 @@ export function App({ storage, isPreview = false, toggleMaximized, windowZoom }:
     }
     window.addEventListener("keydown", handleShortcut);
     return () => window.removeEventListener("keydown", handleShortcut);
-  }, [sidebarDialog, entryToDelete, toggleSidebar]);
+  }, [sidebarDialog, translationSource, entryToDelete, toggleSidebar]);
 
   function update(edit: (workspace: Workspace) => Workspace) {
     if (current.current) save(edit(current.current));
@@ -92,8 +99,8 @@ export function App({ storage, isPreview = false, toggleMaximized, windowZoom }:
   function createEntry(kind: WorkspaceEntry["kind"]) {
     const id = crypto.randomUUID();
     update((previous) => kind === "note"
-      ? { ...previous, activeEntry: { kind, id }, notes: [...previous.notes, createNote(id)] }
-      : { ...previous, activeEntry: { kind, id }, canvases: [...previous.canvases, createCanvas(id)] });
+      ? { ...previous, activeEntry: { kind, id }, notes: [...previous.notes, createNote(id, "")] }
+      : { ...previous, activeEntry: { kind, id }, canvases: [...previous.canvases, createCanvas(id, "")] });
   }
 
   async function importNote(file: File) {
@@ -123,8 +130,25 @@ export function App({ storage, isPreview = false, toggleMaximized, windowZoom }:
     const workspace = current.current;
     const source = workspace?.canvases.find((canvas) => canvas.id === id);
     if (!workspace || !source) return;
-    const copy = duplicateCanvas(source, workspace.canvases.map((canvas) => canvas.title));
+    const copy = duplicateCanvas(source, workspace.canvases.map((canvas) => canvas.title), undefined,
+      t("{{title}} 副本", { title: source.title.trim() || t("未命名画布") }));
     save({ ...workspace, canvases: [...workspace.canvases, copy], activeEntry: { kind: "canvas", id: copy.id } });
+  }
+
+  function saveTranslation(result: TranslationSource, direction: TranslationDirection) {
+    const language = direction === "zh-en" ? "English" : "简体中文";
+    update((previous) => {
+      if (result.kind === "note") {
+        const id = crypto.randomUUID();
+        const name = result.note.title.trim() || t("未命名笔记");
+        return { ...previous, notes: [...previous.notes, { ...result.note, id, title: `${name} · ${language}` }],
+          activeEntry: { kind: "note", id } };
+      }
+      const name = result.canvas.title.trim() || t("未命名画布");
+      const canvas = duplicateCanvas(result.canvas, previous.canvases.map(({ title }) => title), undefined, `${name} · ${language}`);
+      return { ...previous, canvases: [...previous.canvases, canvas], activeEntry: { kind: "canvas", id: canvas.id } };
+    });
+    setTranslationSource(null);
   }
 
   function deleteEntry(entry: WorkspaceEntry) {
@@ -148,10 +172,10 @@ export function App({ storage, isPreview = false, toggleMaximized, windowZoom }:
     ...(workspace?.notes ?? []).map(({ id, title }) => ({ id, title, kind: "note" as const })),
     ...(workspace?.canvases ?? []).map(({ id, title }) => ({ id, title, kind: "canvas" as const })),
   ];
-  const title = canvas ? canvas.title || "未命名画布" : note ? note.title || "未命名笔记" : null;
+  const title = canvas ? canvas.title || t("未命名画布") : note ? note.title || t("未命名笔记") : null;
   const sidebarCollapsed = Boolean(workspace?.sidebarCollapsed);
   const SidebarIcon = sidebarCollapsed ? PanelLeftOpen : PanelLeftClose;
-  const sidebarAction = sidebarCollapsed ? "展开侧栏" : "收起侧栏";
+  const sidebarAction = sidebarCollapsed ? t("展开侧栏") : t("收起侧栏");
   const removeTitle = entries.find((entry) => entry.id === entryToDelete?.id && entry.kind === entryToDelete.kind)?.title;
 
   return (
@@ -177,50 +201,52 @@ export function App({ storage, isPreview = false, toggleMaximized, windowZoom }:
           <div className="workbench-location">
             <button type="button" className="icon-button sidebar-toggle" aria-label={sidebarAction} title={sidebarAction}
               aria-expanded={!sidebarCollapsed} disabled={!workspace} onClick={toggleSidebar}><SidebarIcon size={17} /></button>
-            <nav className="breadcrumbs" aria-label="当前位置">
-              <span className="breadcrumb-home"><LayoutGrid size={15} /> 工作区</span>
+            <nav className="breadcrumbs" aria-label={t("当前位置")}>
+              <span className="breadcrumb-home"><LayoutGrid size={15} />{t("工作区")}</span>
               {title && <><ChevronRight size={14} /><span title={title}>{title}</span></>}
             </nav>
           </div>
           <div className="workbench-actions">
             {workspace && (saveStatus === "failed" ? (
               <button type="button" className="save-status failed" onClick={() => { if (current.current) save(current.current); }}>
-                <CircleAlert size={14} /> 保存失败，重试
-              </button>
+                <CircleAlert size={14} />{t("保存失败，重试")}</button>
             ) : (
               <span className="save-status" role="status">
                 <span className="save-dot"><Check size={9} strokeWidth={2.6} /></span>
-                {isPreview ? "预览模式" : saveStatus === "saving" ? "正在保存" : "已本地保存"}
+                {isPreview ? t("预览模式") : saveStatus === "saving" ? t("正在保存") : t("已本地保存")}
               </span>
             ))}
-            {toggleMaximized && <button type="button" className="icon-button window-size-button" title="最大化或还原窗口（F11）"
-              aria-label="最大化或还原窗口" onClick={() => {
+            {toggleMaximized && <button type="button" className="icon-button window-size-button" title={t("最大化或还原窗口（F11）")}
+              aria-label={t("最大化或还原窗口")} onClick={() => {
                 setAlert(null);
                 void toggleMaximized().catch(() => setAlert("无法调整窗口大小"));
               }}><Maximize size={17} /></button>}
           </div>
         </header>
         {alert && <div className="workbench-alert" role="alert">
-          {alert} <button className="icon-button" aria-label="关闭提示" onClick={() => setAlert(null)}><X size={15} /></button>
+          {t(alert)} <button className="icon-button" aria-label={t("关闭提示")} onClick={() => setAlert(null)}><X size={15} /></button>
         </div>}
         {canvas ? <CanvasView key={canvas.id} canvas={canvas} notes={workspace?.notes ?? []}
           revealNode={canvasNode?.canvasId === canvas.id ? canvasNode : undefined}
+          onTranslate={translation ? () => setTranslationSource({ kind: "canvas", canvas }) : undefined}
           onChange={(changed) => update((previous) => ({
             ...previous, canvases: previous.canvases.map((item) => item.id === changed.id ? changed : item),
           }))} />
-          : note ? <NotesView key={note.id} note={note} onChange={(changed) => update((previous) => ({
+          : note ? <NotesView key={note.id} note={note}
+            onTranslate={translation ? () => setTranslationSource({ kind: "note", note }) : undefined}
+            onChange={(changed) => update((previous) => ({
             ...previous, notes: previous.notes.map((item) => item.id === changed.id ? changed : item),
           }))} />
             : <div className="workspace-empty">
               <span className="empty-symbol"><NotebookText size={28} strokeWidth={1.6} /></span>
-              <h1>{loadFailed ? "无法打开工作区" : workspace ? "开始记录" : "正在打开工作区"}</h1>
+              <h1>{loadFailed ? t("无法打开工作区") : workspace ? t("开始记录") : t("正在打开工作区")}</h1>
               {loadFailed && <button className="secondary-button" onClick={() => {
                 setLoadFailed(false);
                 setLoadAttempt((attempt) => attempt + 1);
-              }}>重试</button>}
+              }}>{t("重试")}</button>}
               {workspace && <div className="empty-actions">
-                <button className="primary-button" onClick={() => createEntry("note")}>新建笔记</button>
-                <button className="secondary-button" onClick={() => createEntry("canvas")}>新建画布</button>
+                <button className="primary-button" onClick={() => createEntry("note")}>{t("新建笔记")}</button>
+                <button className="secondary-button" onClick={() => createEntry("canvas")}>{t("新建画布")}</button>
               </div>}
             </div>}
       </main>
@@ -231,17 +257,19 @@ export function App({ storage, isPreview = false, toggleMaximized, windowZoom }:
         }} />}
       {sidebarDialog === "updates" && <UpdatesDialog onClose={() => setSidebarDialog(null)} />}
       {sidebarDialog === "settings" && <SettingsDialog zoom={windowZoom} onClose={() => setSidebarDialog(null)} />}
+      {translationSource && translation && <TranslationDialog source={translationSource} engine={translation}
+        onSave={saveTranslation} onClose={() => setTranslationSource(null)} />}
       {entryToDelete && <div className="dialog-backdrop" onClick={() => setEntryToDelete(null)}>
         <form role="alertdialog" aria-modal="true" aria-labelledby="delete-title" className="dialog"
           onClick={(event) => event.stopPropagation()} onSubmit={(event) => {
             event.preventDefault();
             deleteEntry(entryToDelete);
           }} onKeyDown={(event) => { if (event.key === "Escape") setEntryToDelete(null); }}>
-          <h2 id="delete-title">删除{entryToDelete.kind === "note" ? "笔记" : "画布"}</h2>
-          <p>将从工作区删除「{removeTitle || "未命名"}」。</p>
+          <h2 id="delete-title">{t(entryToDelete.kind === "note" ? "删除笔记" : "删除画布")}</h2>
+          <p>{t("将从工作区删除「{{title}}」。", { title: removeTitle || t("未命名") })}</p>
           <div className="dialog-actions">
-            <button type="button" className="secondary-button" autoFocus onClick={() => setEntryToDelete(null)}>取消</button>
-            <button type="submit" className="danger-button">删除</button>
+            <button type="button" className="secondary-button" autoFocus onClick={() => setEntryToDelete(null)}>{t("取消")}</button>
+            <button type="submit" className="danger-button">{t("删除")}</button>
           </div>
         </form>
       </div>}

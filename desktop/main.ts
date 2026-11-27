@@ -5,6 +5,7 @@ import { desktopChannels } from "../src/workspace/desktopWorkspace";
 import type { Workspace } from "../src/workspace/workspace";
 import { getZoomPercent, registerWindowShortcuts, setZoomPercent, toggleMaximized } from "./window";
 import { createWorkspaceStore } from "./workspaceStore";
+import { createTranslationService } from "./translationService";
 
 let mainWindow: BrowserWindow | null = null;
 
@@ -18,6 +19,16 @@ function getSenderWindow(event: IpcMainInvokeEvent): BrowserWindow {
 
 async function start(): Promise<void> {
   const store = createWorkspaceStore(join(app.getPath("userData"), "workspace.json"));
+  const models = join(app.isPackaged ? process.resourcesPath : app.getAppPath(), "translation-models");
+  const translation = createTranslationService(join(__dirname, "translationWorker.cjs"), models);
+  ipcMain.handle(desktopChannels.translate, (event, direction: unknown, segments: unknown) => {
+    getSenderWindow(event);
+    return translation.translate(direction, segments);
+  });
+  ipcMain.handle(desktopChannels.cancelTranslation, (event) => {
+    getSenderWindow(event);
+    translation.cancel();
+  });
   ipcMain.handle(desktopChannels.loadWorkspace, (event) => {
     getSenderWindow(event);
     return store.loadWorkspace();
@@ -68,7 +79,10 @@ async function start(): Promise<void> {
     closing = true;
     void closeAfterSave();
   });
-  window.on("closed", () => { mainWindow = null; });
+  window.on("closed", () => {
+    mainWindow = null;
+    translation.cancel();
+  });
   await window.loadFile(join(__dirname, "../renderer/index.html"));
 
   async function closeAfterSave() {

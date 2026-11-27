@@ -2,8 +2,8 @@ import type { CanvasDocument } from "../../workspace/workspace";
 
 export function duplicateCanvas(
   source: CanvasDocument, existingTitles: readonly string[], nextId: () => string = () => crypto.randomUUID(),
+  title = `${source.title.trim() || "未命名画布"} 副本`,
 ): CanvasDocument {
-  const title = `${source.title.trim() || "未命名画布"} 副本`;
   const titles = new Set(existingTitles);
   let availableTitle = title;
   for (let suffix = 2; titles.has(availableTitle); suffix++) availableTitle = `${title} ${suffix}`;
