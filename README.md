@@ -15,14 +15,15 @@
 ## 界面预览
 
 <p align="center">
-  <img src="docs/media/inkbench-notes.png" width="25%" alt="墨栈笔记编辑器展示 ripgrep 命令、代码高亮和选项说明" />
-  <img src="docs/media/inkbench-api-canvas.png" width="25%" alt="墨栈内置 API 联调画布，包含设备接口笔记、两个文本框和手绘箭头" />
+  <img src="docs/media/inkbench-notes.png" width="47%" alt="墨栈笔记编辑器展示 ripgrep 命令、代码高亮和选项说明" />
+  &nbsp;
+  <img src="docs/media/inkbench-api-canvas.png" width="47%" alt="墨栈内置 API 联调画布，包含设备接口笔记、两个文本框和手绘箭头" />
   <br />
   <sub>可视化笔记（左） · API 联调画布（右）</sub>
 </p>
 
 <p align="center">
-  <img src="docs/media/inkbench-mind-map-demo.webp" width="100%" alt="思维导图操作演示，导入 Markdown、搜索节点并改名" />
+  <img src="docs/media/inkbench-mind-map-demo.webp" width="47%" alt="思维导图操作演示，导入 Markdown、搜索节点并改名" />
 </p>
 
 约 17 秒的演示使用一份根据 REA 公开文档整理的 Markdown 提纲。导入后生成 37 个节点，搜索「证据记录」，再将它改名为「分析证据」。[REA 公开文档](https://github.com/morluto/rea/tree/main/docs)
