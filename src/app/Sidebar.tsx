@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { Bell, ChevronDown, FileText, LayoutTemplate, MoreHorizontal, NotebookPen, Pencil, Plus, Trash2 } from "lucide-react";
+import { Bell, ChevronDown, FileText, FileUp, LayoutTemplate, MoreHorizontal, NotebookPen, Pencil, Plus, Trash2 } from "lucide-react";
 import { version } from "../../package.json";
 import type { WorkspaceEntry } from "../workspace/workspace";
 
@@ -15,6 +15,7 @@ export interface SidebarProps {
   onRename: (entry: WorkspaceEntry, title: string) => void;
   onDelete: (entry: WorkspaceEntry) => void;
   onShowUpdates: () => void;
+  onImportMarkdown?: (file: File) => void;
 }
 
 const sections = [
@@ -22,10 +23,11 @@ const sections = [
   { kind: "canvas", label: "画布", icon: LayoutTemplate },
 ] as const;
 
-export function Sidebar({ entries, activeEntry, onCreate, onOpen, onRename, onDelete, onShowUpdates }: SidebarProps) {
+export function Sidebar({ entries, activeEntry, onCreate, onOpen, onRename, onDelete, onShowUpdates, onImportMarkdown }: SidebarProps) {
   const [menu, setMenu] = useState<string | null>(null);
   const [renaming, setRenaming] = useState<string | null>(null);
   const aside = useRef<HTMLElement>(null);
+  const markdownInput = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (!menu) return;
@@ -52,7 +54,18 @@ export function Sidebar({ entries, activeEntry, onCreate, onOpen, onRename, onDe
           setMenu(null);
           onCreate(kind);
         }}><Icon size={16} /> 新建{label}</button>)}
+        <button type="button" disabled={!onImportMarkdown} onClick={() => {
+          setMenu(null);
+          markdownInput.current?.click();
+        }}><FileUp size={16} /> 导入 Markdown</button>
       </div>}
+      <input ref={markdownInput} type="file" hidden aria-label="选择 Markdown 笔记文件"
+        accept=".md,.markdown,text/markdown" onChange={(event) => {
+          const input = event.currentTarget;
+          const file = input.files?.[0];
+          input.value = "";
+          if (file) onImportMarkdown?.(file);
+        }} />
     </div>
     <nav className="file-list" aria-label="笔记和画布">
       {sections.map(({ kind, label, icon: Icon }) => (

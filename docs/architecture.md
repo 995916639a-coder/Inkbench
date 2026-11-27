@@ -20,6 +20,7 @@
 | 目录 | 职责 |
 | --- | --- |
 | `src/function/documents/` | 创建笔记和复制正文。 |
+| `src/function/markdown-import/` | 将本地 Markdown 文件解析为笔记和画布卡片共用的结构化正文。 |
 | `src/function/canvas-items/` | 管理文本框、笔记卡片和已提交的笔迹。 |
 | `src/function/drawing/` | 将指针输入整理成一笔可保存的轨迹。 |
 | `src/function/viewport/` | 计算平移、缩放和坐标转换。 |
@@ -27,6 +28,8 @@
 工作台组装页面，页面调用能力，底层能力接收数据并返回结果。能力通过各自的 `index.ts` 提供上层实际使用的入口。React 组件和业务操作以具名函数为主，数据结构用 TypeScript 类型。
 
 例如，把笔记放到画布上时，工作台向画布页面提供笔记列表。用户选定笔记和放置点后，`CanvasView` 依次调用 `copyDocumentContent()`、`screenToCanvas()` 和 `addNoteCard()`，最后用 `onChange` 把更新后的画布交给 `App`。卡片拥有自己的标题、正文和位置。
+
+导入文件时，`App` 和 `CanvasView` 调用同一个 `importMarkdownFile()`。函数只处理用户选中的文件并返回标题与正文。将结果加入笔记或画布、保存工作区，仍由调用方处理。
 
 未来可增加 `src/function/project-analysis/` 读取项目源码并生成节点和关系。工作台负责导入入口，画布页面负责组织展示和编辑。连线属于画布相关能力，分析规则留在项目分析模块。
 

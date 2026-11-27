@@ -17,12 +17,13 @@ export interface RichTextEditorProps {
 const extensions = [
   StarterKit.configure({
     codeBlock: false,
-    heading: { levels: [1, 2, 3] },
     link: { openOnClick: true, HTMLAttributes: { target: "_blank", rel: "noopener noreferrer" } },
   }),
   CodeBlockLowlight.configure({ lowlight: createLowlight(common) }),
   Placeholder.configure({ placeholder: "开始写笔记…" }),
 ];
+
+const headingLevels = [1, 2, 3, 4, 5, 6] as const;
 
 const languages = [
   ["", "自动检测"], ["plaintext", "纯文本"], ["typescript", "TypeScript"],
@@ -48,7 +49,7 @@ export function RichTextEditor({ content, onChange, editable = true }: RichTextE
   const state = useEditorState({
     editor,
     selector: ({ editor }) => ({
-      heading: [1, 2, 3].find((level) => editor?.isActive("heading", { level })) ?? 0,
+      heading: headingLevels.find((level) => editor?.isActive("heading", { level })) ?? 0,
       bold: editor?.isActive("bold") ?? false,
       bulletList: editor?.isActive("bulletList") ?? false,
       orderedList: editor?.isActive("orderedList") ?? false,
@@ -79,14 +80,12 @@ export function RichTextEditor({ content, onChange, editable = true }: RichTextE
   return <div className={`rich-text${editable ? " is-editable" : ""}`}>
     {editable && <div className="editor-toolbar" aria-label="文本格式工具">
       <select className="editor-select" aria-label="段落格式" value={state?.heading ?? 0} onChange={(event) => {
-        const level = Number(event.currentTarget.value);
-        if (level === 1 || level === 2 || level === 3) editor.chain().focus().setHeading({ level }).run();
+        const level = headingLevels.find((level) => String(level) === event.currentTarget.value);
+        if (level) editor.chain().focus().setHeading({ level }).run();
         else editor.chain().focus().setParagraph().run();
       }}>
         <option value={0}>正文</option>
-        <option value={1}>标题 1</option>
-        <option value={2}>标题 2</option>
-        <option value={3}>标题 3</option>
+        {headingLevels.map((level) => <option key={level} value={level}>标题 {level}</option>)}
       </select>
       <span className="editor-divider" />
       {tools.map(({ name, icon: Icon, active, run }) => (
@@ -126,6 +125,8 @@ export function RichTextEditor({ content, onChange, editable = true }: RichTextE
           language: event.currentTarget.value || null,
         }).run()}>
         {languages.map(([value, label]) => <option key={value} value={value}>{label}</option>)}
+        {state.language && !languages.some(([value]) => value === state.language)
+          && <option value={state.language}>{state.language}</option>}
       </select>}
     </div>}
     <EditorContent editor={editor} />

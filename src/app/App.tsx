@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Check, ChevronRight, CircleAlert, Focus, LayoutGrid, NotebookText, X } from "lucide-react";
 import { createNote } from "../function/documents";
+import { importMarkdownFile } from "../function/markdown-import";
 import { CanvasView } from "../views/canvas/CanvasView";
 import { NotesView } from "../views/notes/NotesView";
 import { UpdatesDialog } from "../views/updates/UpdatesDialog";
@@ -25,7 +26,8 @@ export function App({ storage, isPreview = false, toggleFullscreen }: AppProps) 
   const [loadFailed, setLoadFailed] = useState(false);
   const [loadAttempt, setLoadAttempt] = useState(0);
   const [entryToDelete, setEntryToDelete] = useState<WorkspaceEntry | null>(null);
-  const [fullscreenFailed, setFullscreenFailed] = useState(false);
+  const [alert, setAlert] = useState<string | null>(null);
+  const [importing, setImporting] = useState(false);
   const [updatesOpen, setUpdatesOpen] = useState(false);
 
   const save = useCallback((next: Workspace) => {
@@ -64,6 +66,23 @@ export function App({ storage, isPreview = false, toggleFullscreen }: AppProps) 
     update((previous) => kind === "note"
       ? { ...previous, activeEntry: { kind, id }, notes: [...previous.notes, createNote(id)] }
       : { ...previous, activeEntry: { kind, id }, canvases: [...previous.canvases, createCanvas(id)] });
+  }
+
+  async function importNote(file: File) {
+    setAlert(null);
+    setImporting(true);
+    try {
+      const note = { id: crypto.randomUUID(), ...await importMarkdownFile(file) };
+      update((previous) => ({
+        ...previous,
+        notes: [...previous.notes, note],
+        activeEntry: { kind: "note", id: note.id },
+      }));
+    } catch (error) {
+      setAlert(error instanceof Error ? error.message : "无法导入 Markdown 文件。");
+    } finally {
+      setImporting(false);
+    }
   }
 
   function renameEntry(entry: WorkspaceEntry, title: string) {
@@ -106,6 +125,7 @@ export function App({ storage, isPreview = false, toggleFullscreen }: AppProps) 
         onRename={renameEntry}
         onDelete={setEntryToDelete}
         onShowUpdates={() => setUpdatesOpen(true)}
+        onImportMarkdown={workspace && !importing ? importNote : undefined}
       />
       <main className="workbench">
         <header className="workbench-header">
@@ -126,13 +146,13 @@ export function App({ storage, isPreview = false, toggleFullscreen }: AppProps) 
             ))}
             {toggleFullscreen && <button type="button" className="icon-button fullscreen-button" title="切换全屏（F11）"
               aria-label="切换全屏" onClick={() => {
-                setFullscreenFailed(false);
-                void toggleFullscreen().catch(() => setFullscreenFailed(true));
+                setAlert(null);
+                void toggleFullscreen().catch(() => setAlert("无法切换全屏"));
               }}><Focus size={18} /></button>}
           </div>
         </header>
-        {fullscreenFailed && <div className="workbench-alert" role="alert">
-          无法切换全屏 <button className="icon-button" aria-label="关闭提示" onClick={() => setFullscreenFailed(false)}><X size={15} /></button>
+        {alert && <div className="workbench-alert" role="alert">
+          {alert} <button className="icon-button" aria-label="关闭提示" onClick={() => setAlert(null)}><X size={15} /></button>
         </div>}
         {canvas ? <CanvasView key={canvas.id} canvas={canvas} notes={workspace?.notes ?? []}
           onChange={(changed) => update((previous) => ({

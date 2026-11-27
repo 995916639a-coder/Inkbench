@@ -1,4 +1,4 @@
-import { BookOpen, Hand, Minus, MousePointer2, PenLine, Plus, Type, Undo2 } from "lucide-react";
+import { BookOpen, FileUp, Hand, Minus, MousePointer2, PenLine, Plus, Type, Undo2 } from "lucide-react";
 import type { Note } from "../../function/documents";
 
 export type CanvasTool = "select" | "hand" | "text" | "pen";
@@ -12,6 +12,7 @@ interface CanvasToolbarProps {
   onChooseTool: (tool: CanvasTool) => void;
   onToggleNotes: () => void;
   onChooseNote: (note: Note) => void;
+  onImportMarkdown: () => void;
   onUndo: () => void;
   onZoom: (scale: number) => void;
 }
@@ -24,7 +25,7 @@ const tools = [
 ] as const;
 
 export function CanvasToolbar({
-  tool, scale, notes, notePickerOpen, canUndo, onChooseTool, onToggleNotes, onChooseNote, onUndo, onZoom,
+  tool, scale, notes, notePickerOpen, canUndo, onChooseTool, onToggleNotes, onChooseNote, onImportMarkdown, onUndo, onZoom,
 }: CanvasToolbarProps) {
   return <>
     <div className="canvas-toolbar canvas-controls" role="group" aria-label="画布工具">
@@ -37,7 +38,8 @@ export function CanvasToolbar({
         <button type="button" className="canvas-tool note-picker-toggle" aria-expanded={notePickerOpen}
           onClick={onToggleNotes}><BookOpen size={17} strokeWidth={1.8} /><span>添加笔记</span></button>
         {notePickerOpen && <div className="note-picker-menu" aria-label="选择笔记">
-          {notes.length === 0 ? <p>在工作区新建一篇笔记即可添加。</p> : notes.map((note) => (
+          <button type="button" onClick={onImportMarkdown}><FileUp size={15} /><span>导入 Markdown 到画布</span></button>
+          {notes.map((note) => (
             <button type="button" key={note.id} onClick={() => onChooseNote(note)}>
               <BookOpen size={15} /><span>{note.title || "未命名笔记"}</span>
             </button>

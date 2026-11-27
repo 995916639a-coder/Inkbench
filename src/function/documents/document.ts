@@ -1,11 +1,11 @@
 type JsonValue = null | boolean | number | string | JsonValue[] | { [key: string]: JsonValue };
 
-interface DocumentMark {
+export interface DocumentMark {
   type: string;
   attrs?: Record<string, JsonValue>;
 }
 
-interface DocumentNode {
+export interface DocumentNode {
   type: string;
   attrs?: Record<string, JsonValue>;
   content?: DocumentNode[];

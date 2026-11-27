@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { Hand, Layers, LayoutTemplate, Pencil, Plus, Trash2 } from "lucide-react";
+import { FileUp, Hand, Layers, LayoutTemplate, Pencil, Plus, Trash2 } from "lucide-react";
 import { RichTextEditor } from "../../editor/RichTextEditor";
 import {
   addNoteCard, addStroke, addTextBox, moveCanvasItem, removeCanvasItem,
@@ -8,6 +8,7 @@ import {
 import { copyDocumentContent } from "../../function/documents";
 import type { Note } from "../../function/documents";
 import { finishStroke } from "../../function/drawing";
+import { importMarkdownFile } from "../../function/markdown-import";
 import { panViewport, screenToCanvas, zoomViewport } from "../../function/viewport";
 import type { CanvasViewport, Point } from "../../function/viewport";
 import type { CanvasDocument } from "../../workspace/workspace";
@@ -20,6 +21,8 @@ export interface CanvasViewProps {
   notes: readonly Note[];
   onChange: (canvas: CanvasDocument) => void;
 }
+
+type NoteContent = Pick<Note, "title" | "content">;
 
 type Gesture =
   | { kind: "pan"; pointer: number; from: Point; viewport: CanvasViewport }
@@ -57,9 +60,13 @@ export function CanvasView({ canvas, notes, onChange }: CanvasViewProps) {
   const [selected, setSelected] = useState<string | null>(null);
   const [editing, setEditing] = useState<string | null>(null);
   const [notePickerOpen, setNotePickerOpen] = useState(false);
-  const [noteToPlace, setNoteToPlace] = useState<Note | null>(null);
+  const [noteToPlace, setNoteToPlace] = useState<NoteContent | null>(null);
+  const [importError, setImportError] = useState<string | null>(null);
+  const [fileOverCanvas, setFileOverCanvas] = useState(false);
   const [draft, setDraft] = useState<Draft | null>(null);
   const stage = useRef<HTMLDivElement>(null);
+  const markdownInput = useRef<HTMLInputElement>(null);
+  const importing = useRef(false);
   const gesture = useRef<Gesture | null>(null);
   const latest = useRef({ canvas, onChange });
   useEffect(() => { latest.current = { canvas, onChange }; }, [canvas, onChange]);
@@ -90,6 +97,7 @@ export function CanvasView({ canvas, notes, onChange }: CanvasViewProps) {
     setTool(nextTool);
     setNoteToPlace(null);
     setNotePickerOpen(false);
+    setImportError(null);
     if (nextTool !== "select") {
       setEditing(null);
       setSelected(null);
@@ -102,6 +110,31 @@ export function CanvasView({ canvas, notes, onChange }: CanvasViewProps) {
     setSelected(null);
     setEditing(null);
     stage.current?.focus({ preventScroll: true });
+  }
+
+  function placeNote(note: NoteContent, position: Point) {
+    const { canvas, onChange } = latest.current;
+    const id = crypto.randomUUID();
+    onChange({ ...canvas, items: addNoteCard(canvas.items, id, position, note) });
+    setSelected(id);
+    setEditing(null);
+  }
+
+  async function importFile(file: File, position?: Point) {
+    if (importing.current) return;
+    importing.current = true;
+    setImportError(null);
+    try {
+      const note = await importMarkdownFile(file);
+      if (!stage.current) return;
+      chooseTool("select");
+      if (position) placeNote(note, position);
+      else setNoteToPlace(note);
+    } catch (error) {
+      if (stage.current) setImportError(error instanceof Error ? error.message : "无法导入 Markdown 文件。");
+    } finally {
+      importing.current = false;
+    }
   }
 
   function changeZoom(scale: number) {
@@ -156,12 +189,35 @@ export function CanvasView({ canvas, notes, onChange }: CanvasViewProps) {
           setSelected(null);
           setNoteToPlace(null);
           setNotePickerOpen(false);
+          setImportError(null);
           return;
         }
         if (isEditorTarget(event.target) || event.ctrlKey || event.altKey || event.metaKey) return;
         if (event.key === "Delete" && selected) removeObject(selected);
         const nextTool = toolKeys[event.key.toLowerCase()];
         if (nextTool) chooseTool(nextTool);
+      }}
+      onDragOver={(event) => {
+        if (!event.dataTransfer.types.includes("Files")) return;
+        event.preventDefault();
+        event.dataTransfer.dropEffect = "copy";
+        setFileOverCanvas(true);
+      }}
+      onDragLeave={(event) => {
+        if (!(event.relatedTarget instanceof Node) || !event.currentTarget.contains(event.relatedTarget)) {
+          setFileOverCanvas(false);
+        }
+      }}
+      onDrop={(event) => {
+        if (!event.dataTransfer.types.includes("Files")) return;
+        event.preventDefault();
+        setFileOverCanvas(false);
+        if (event.dataTransfer.files.length !== 1) {
+          setImportError("请一次拖入一个 Markdown 文件。");
+          return;
+        }
+        const point = pointerPosition(event.currentTarget, event.clientX, event.clientY);
+        void importFile(event.dataTransfer.files[0], screenToCanvas(point, canvas.viewport));
       }}
       onPointerDown={(event) => {
         if (gesture.current || !(event.target instanceof Element) || event.target.closest(".canvas-controls")) return;
@@ -189,12 +245,9 @@ export function CanvasView({ canvas, notes, onChange }: CanvasViewProps) {
         } else if (object) {
           return;
         } else if (noteToPlace) {
-          const id = crypto.randomUUID();
-          const note = { title: noteToPlace.title, content: copyDocumentContent(noteToPlace.content) };
-          onChange({ ...canvas, items: addNoteCard(canvas.items, id, worldPoint, note) });
+          placeNote(noteToPlace, worldPoint);
           setNoteToPlace(null);
-          setSelected(id);
-          setEditing(null);
+          setImportError(null);
           stage.current?.focus({ preventScroll: true });
           return;
         } else if (tool === "text") {
@@ -297,10 +350,28 @@ export function CanvasView({ canvas, notes, onChange }: CanvasViewProps) {
         <Plus size={16} /> 点击画布放置「{noteToPlace.title || "未命名笔记"}」
         <button className="text-button" type="button" onClick={() => setNoteToPlace(null)}>取消</button>
       </div>}
+      {importError && !noteToPlace && <div className="canvas-placement canvas-controls canvas-import-error" role="alert">
+        {importError}<button className="text-button" type="button" onClick={() => setImportError(null)}>关闭</button>
+      </div>}
+      {fileOverCanvas && <div className="canvas-file-drop" aria-hidden="true"><FileUp size={18} /> 松开以导入 Markdown</div>}
+      <input hidden ref={markdownInput} type="file" accept=".md,.markdown,text/markdown" aria-label="选择画布 Markdown 文件"
+        onChange={(event) => {
+          const input = event.currentTarget;
+          const file = input.files?.[0];
+          input.value = "";
+          if (file) void importFile(file);
+        }} />
       <div className="canvas-hint"><Hand size={14} /> 中键拖动画布 <span>·</span> 滚轮缩放</div>
       <CanvasToolbar tool={tool} scale={viewport.scale} notePickerOpen={notePickerOpen} notes={notes}
         canUndo={canUndo} onChooseTool={chooseTool} onToggleNotes={() => setNotePickerOpen(!notePickerOpen)}
-        onChooseNote={(note) => { chooseTool("select"); setNoteToPlace(note); }}
+        onChooseNote={(note) => {
+          chooseTool("select");
+          setNoteToPlace({ title: note.title, content: copyDocumentContent(note.content) });
+        }}
+        onImportMarkdown={() => {
+          chooseTool("select");
+          markdownInput.current?.click();
+        }}
         onUndo={() => onChange({ ...canvas, items: undoLastStroke(canvas.items) })}
         onZoom={changeZoom} />
     </div>

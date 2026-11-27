@@ -1,6 +1,6 @@
 {
   "name": "inkbench",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "private": true,
   "description": "A local notebook and canvas for programmers",
   "author": {
@@ -30,6 +30,7 @@
     "@tiptap/pm": "3.35.0",
     "@tiptap/react": "3.35.0",
     "@tiptap/starter-kit": "3.35.0",
+    "@types/mdast": "^4.0.4",
     "@types/node": "^24.0.0",
     "@types/react": "^19.2.0",
     "@types/react-dom": "^19.2.0",
@@ -41,7 +42,10 @@
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
     "react-markdown": "^10.1.0",
+    "remark-gfm": "^4.0.1",
+    "remark-parse": "^11.0.0",
     "typescript": "~5.9.3",
+    "unified": "^11.0.5",
     "vite": "^8.4.0"
   },
   "build": {

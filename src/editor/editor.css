@@ -61,10 +61,15 @@
 .tiptap p, .tiptap ul, .tiptap ol { margin: 0 0 12px; }
 .tiptap ul, .tiptap ol { padding-left: 1.5em; }
 .tiptap li p { margin: 2px 0; }
-.tiptap h1, .tiptap h2, .tiptap h3 { color: var(--ink); line-height: 1.45; margin: 20px 0 8px; }
+.tiptap :is(h1, h2, h3, h4, h5, h6) { color: var(--ink); line-height: 1.45; margin: 20px 0 8px; }
 .tiptap h1 { font-size: 1.75em; }
 .tiptap h2 { font-size: 1.43em; }
 .tiptap h3 { font-size: 1.2em; }
+.tiptap h4 { font-size: 1.09em; }
+.tiptap h5 { font-size: 1em; }
+.tiptap h6 { font-size: .94em; }
+.tiptap blockquote { margin: 13px 0; padding-left: 12px; border-left: 3px solid #dbe6d9; color: var(--muted); }
+.tiptap hr { border: 0; border-top: 1px solid var(--border); margin: 18px 0; }
 .tiptap a { color: var(--green); text-underline-offset: 3px; cursor: pointer; }
 .tiptap strong { font-weight: 700; }
 .tiptap code {
