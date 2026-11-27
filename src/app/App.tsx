@@ -1,9 +1,11 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { Check, ChevronRight, CircleAlert, Focus, LayoutGrid, NotebookText, X } from "lucide-react";
+import { Check, ChevronRight, CircleAlert, Focus, LayoutGrid, NotebookText, PanelLeftClose, PanelLeftOpen, X } from "lucide-react";
+import { duplicateCanvas } from "../function/canvas-duplicate";
 import { createNote } from "../function/documents";
 import { importMarkdownFile } from "../function/markdown-import";
 import { CanvasView } from "../views/canvas/CanvasView";
 import { NotesView } from "../views/notes/NotesView";
+import { WorkspaceSearchDialog } from "../views/search/WorkspaceSearchDialog";
 import { UpdatesDialog } from "../views/updates/UpdatesDialog";
 import { createSampleWorkspace } from "../workspace/sampleWorkspace";
 import { createCanvas } from "../workspace/workspace";
@@ -29,6 +31,8 @@ export function App({ storage, isPreview = false, toggleFullscreen }: AppProps) 
   const [alert, setAlert] = useState<string | null>(null);
   const [importing, setImporting] = useState(false);
   const [updatesOpen, setUpdatesOpen] = useState(false);
+  const [searchOpen, setSearchOpen] = useState(false);
+  const [canvasNode, setCanvasNode] = useState<{ canvasId: string; nodeId: string } | null>(null);
 
   const save = useCallback((next: Workspace) => {
     current.current = next;
@@ -40,6 +44,11 @@ export function App({ storage, isPreview = false, toggleFullscreen }: AppProps) 
       () => { if (number === saveNumber.current) setSaveStatus("failed"); },
     );
   }, [storage]);
+
+  const toggleSidebar = useCallback(() => {
+    const workspace = current.current;
+    if (workspace) save({ ...workspace, sidebarCollapsed: !workspace.sidebarCollapsed });
+  }, [save]);
 
   useEffect(() => {
     let active = true;
@@ -56,6 +65,22 @@ export function App({ storage, isPreview = false, toggleFullscreen }: AppProps) 
     });
     return () => { active = false; };
   }, [storage, save, loadAttempt]);
+
+  useEffect(() => {
+    function handleShortcut(event: KeyboardEvent) {
+      if (!(event.ctrlKey || event.metaKey) || event.altKey || event.shiftKey || event.isComposing
+        || !current.current || updatesOpen || entryToDelete) return;
+      if (event.key.toLowerCase() === "k") {
+        event.preventDefault();
+        setSearchOpen(true);
+      } else if ((event.key === "\\" || event.code === "Backslash") && !document.querySelector("dialog:modal") && !event.repeat) {
+        event.preventDefault();
+        toggleSidebar();
+      }
+    }
+    window.addEventListener("keydown", handleShortcut);
+    return () => window.removeEventListener("keydown", handleShortcut);
+  }, [updatesOpen, entryToDelete, toggleSidebar]);
 
   function update(edit: (workspace: Workspace) => Workspace) {
     if (current.current) save(edit(current.current));
@@ -91,6 +116,14 @@ export function App({ storage, isPreview = false, toggleFullscreen }: AppProps) 
       : { ...previous, canvases: previous.canvases.map((canvas) => canvas.id === entry.id ? { ...canvas, title } : canvas) });
   }
 
+  function copyCanvas(id: string) {
+    const workspace = current.current;
+    const source = workspace?.canvases.find((canvas) => canvas.id === id);
+    if (!workspace || !source) return;
+    const copy = duplicateCanvas(source, workspace.canvases.map((canvas) => canvas.title));
+    save({ ...workspace, canvases: [...workspace.canvases, copy], activeEntry: { kind: "canvas", id: copy.id } });
+  }
+
   function deleteEntry(entry: WorkspaceEntry) {
     update((previous) => {
       const notes = entry.kind === "note" ? previous.notes.filter(({ id }) => id !== entry.id) : previous.notes;
@@ -113,26 +146,38 @@ export function App({ storage, isPreview = false, toggleFullscreen }: AppProps) 
     ...(workspace?.canvases ?? []).map(({ id, title }) => ({ id, title, kind: "canvas" as const })),
   ];
   const title = canvas ? canvas.title || "未命名画布" : note ? note.title || "未命名笔记" : null;
+  const sidebarCollapsed = Boolean(workspace?.sidebarCollapsed);
+  const SidebarIcon = sidebarCollapsed ? PanelLeftOpen : PanelLeftClose;
+  const sidebarAction = sidebarCollapsed ? "展开侧栏" : "收起侧栏";
   const removeTitle = entries.find((entry) => entry.id === entryToDelete?.id && entry.kind === entryToDelete.kind)?.title;
 
   return (
-    <div className="app-shell">
-      <Sidebar
+    <div className={`app-shell${sidebarCollapsed ? " is-sidebar-collapsed" : ""}`}>
+      {!sidebarCollapsed && <Sidebar
         entries={entries}
         activeEntry={activeEntry ?? null}
         onCreate={createEntry}
-        onOpen={(entry) => update((previous) => ({ ...previous, activeEntry: entry }))}
+        onOpen={(entry) => {
+          setCanvasNode(null);
+          update((previous) => ({ ...previous, activeEntry: entry }));
+        }}
         onRename={renameEntry}
+        onDuplicateCanvas={copyCanvas}
         onDelete={setEntryToDelete}
         onShowUpdates={() => setUpdatesOpen(true)}
         onImportMarkdown={workspace && !importing ? importNote : undefined}
-      />
+        onSearch={workspace ? () => setSearchOpen(true) : undefined}
+      />}
       <main className="workbench">
         <header className="workbench-header">
-          <nav className="breadcrumbs" aria-label="当前位置">
-            <span className="breadcrumb-home"><LayoutGrid size={15} /> 工作区</span>
-            {title && <><ChevronRight size={14} /><span title={title}>{title}</span></>}
-          </nav>
+          <div className="workbench-location">
+            <button type="button" className="icon-button sidebar-toggle" aria-label={sidebarAction} title={sidebarAction}
+              aria-expanded={!sidebarCollapsed} disabled={!workspace} onClick={toggleSidebar}><SidebarIcon size={17} /></button>
+            <nav className="breadcrumbs" aria-label="当前位置">
+              <span className="breadcrumb-home"><LayoutGrid size={15} /> 工作区</span>
+              {title && <><ChevronRight size={14} /><span title={title}>{title}</span></>}
+            </nav>
+          </div>
           <div className="workbench-actions">
             {workspace && (saveStatus === "failed" ? (
               <button type="button" className="save-status failed" onClick={() => { if (current.current) save(current.current); }}>
@@ -155,6 +200,7 @@ export function App({ storage, isPreview = false, toggleFullscreen }: AppProps) 
           {alert} <button className="icon-button" aria-label="关闭提示" onClick={() => setAlert(null)}><X size={15} /></button>
         </div>}
         {canvas ? <CanvasView key={canvas.id} canvas={canvas} notes={workspace?.notes ?? []}
+          revealNode={canvasNode?.canvasId === canvas.id ? canvasNode : undefined}
           onChange={(changed) => update((previous) => ({
             ...previous, canvases: previous.canvases.map((item) => item.id === changed.id ? changed : item),
           }))} />
@@ -174,6 +220,11 @@ export function App({ storage, isPreview = false, toggleFullscreen }: AppProps) 
               </div>}
             </div>}
       </main>
+      {searchOpen && workspace && <WorkspaceSearchDialog workspace={workspace} onClose={() => setSearchOpen(false)}
+        onOpenResult={({ entry, nodeId }) => {
+          setCanvasNode(nodeId ? { canvasId: entry.id, nodeId } : null);
+          update((previous) => ({ ...previous, activeEntry: entry }));
+        }} />}
       {updatesOpen && <UpdatesDialog onClose={() => setUpdatesOpen(false)} />}
       {entryToDelete && <div className="dialog-backdrop" onClick={() => setEntryToDelete(null)}>
         <form role="alertdialog" aria-modal="true" aria-labelledby="delete-title" className="dialog"

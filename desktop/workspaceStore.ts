@@ -1,5 +1,6 @@
 import { mkdir, readFile, rename, writeFile } from "node:fs/promises";
 import { dirname } from "node:path";
+import { mindMapTones } from "../src/function/mind-map";
 import type { Workspace, WorkspaceStorage } from "../src/workspace/workspace";
 
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -35,9 +36,33 @@ function isCanvasItem(value: unknown): boolean {
   return value.kind === "text-box" && typeof value.text === "string";
 }
 
+function isMindMap(value: unknown): boolean {
+  if (!isRecord(value) || !Array.isArray(value.nodes) || !Array.isArray(value.edges)) return false;
+  const ids = new Set<string>();
+  for (const node of value.nodes) {
+    if (!isRecord(node) || typeof node.id !== "string" || ids.has(node.id)
+      || (node.shape !== "ellipse" && node.shape !== "rectangle")
+      || (node.tone !== undefined && (typeof node.tone !== "string" || !Object.hasOwn(mindMapTones, node.tone)))
+      || typeof node.text !== "string" || !isPoint(node.position) || !isRecord(node.size)
+      || typeof node.size.width !== "number" || !Number.isFinite(node.size.width) || node.size.width <= 0
+      || typeof node.size.height !== "number" || !Number.isFinite(node.size.height) || node.size.height <= 0) return false;
+    ids.add(node.id);
+  }
+  const edgeIds = new Set<string>();
+  return value.edges.every((edge) => {
+    if (!isRecord(edge) || typeof edge.id !== "string" || edgeIds.has(edge.id) || ids.has(edge.id)
+      || typeof edge.from !== "string" || typeof edge.to !== "string"
+      || (edge.label !== undefined && typeof edge.label !== "string")
+      || edge.from === edge.to || !ids.has(edge.from) || !ids.has(edge.to)) return false;
+    edgeIds.add(edge.id);
+    return true;
+  });
+}
+
 function isCanvas(value: unknown): boolean {
   return isRecord(value) && typeof value.id === "string" && typeof value.title === "string"
     && Array.isArray(value.items) && value.items.every(isCanvasItem)
+    && (value.mindMap === undefined || isMindMap(value.mindMap))
     && isRecord(value.viewport) && isPoint(value.viewport.offset)
     && typeof value.viewport.scale === "number" && Number.isFinite(value.viewport.scale)
     && value.viewport.scale > 0;
@@ -45,6 +70,7 @@ function isCanvas(value: unknown): boolean {
 
 function isWorkspace(value: unknown): value is Workspace {
   return isRecord(value) && value.version === 1
+    && (value.sidebarCollapsed === undefined || typeof value.sidebarCollapsed === "boolean")
     && Array.isArray(value.notes)
     && value.notes.every((note) => isRecord(note) && typeof note.id === "string" && hasDocument(note))
     && Array.isArray(value.canvases) && value.canvases.every(isCanvas)

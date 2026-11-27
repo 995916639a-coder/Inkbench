@@ -48,7 +48,7 @@
 .canvas-stage:focus-visible { box-shadow: inset 0 0 0 1px #9ab29d; }
 .tool-hand, .tool-hand .canvas-object { cursor: grab; }
 .is-panning, .is-panning .canvas-object { cursor: grabbing; }
-.tool-pen, .tool-pen .canvas-object, .tool-text, .tool-placing { cursor: crosshair; }
+.tool-pen, .tool-pen .canvas-object, .tool-text, .tool-placing, .tool-ellipse, .tool-rectangle, .tool-connect { cursor: crosshair; }
 .canvas-world { position: absolute; top: 50%; left: 50%; transform-origin: 0 0; }
 .canvas-strokes {
   position: absolute;
@@ -144,6 +144,7 @@
 }
 .canvas-empty h2 { margin: 10px 0 4px; font-size: 18px; }
 .canvas-empty p { margin: 0; font-size: 13px; color: var(--muted); }
+.canvas-empty .secondary-button { min-height: 32px; margin-top: 13px; pointer-events: auto; color: var(--green); }
 .canvas-placement {
   z-index: 5;
   position: absolute;
@@ -163,8 +164,8 @@
   font-size: 12px;
   cursor: default;
 }
-.canvas-import-error { color: var(--danger); }
-.canvas-import-error .text-button { color: inherit; }
+.canvas-error { color: var(--danger); }
+.canvas-error .text-button { color: inherit; }
 .canvas-file-drop {
   position: absolute;
   inset: 9px;
@@ -212,7 +213,7 @@
   font-weight: 600;
 }
 .canvas-tool:hover:not(:disabled) { background: var(--hover); color: var(--ink); }
-.canvas-tool[aria-pressed="true"], .canvas-tool[aria-expanded="true"] { background: #e6eee4; color: var(--green); }
+.canvas-tool[aria-pressed="true"], .canvas-tool[aria-expanded="true"], .canvas-tool[data-active="true"] { background: #e6eee4; color: var(--green); }
 .canvas-tool-divider { width: 1px; height: 22px; background: var(--border); margin: 0 2px; }
 .canvas-note-picker { position: relative; }
 .note-picker-toggle { width: auto; padding-inline: 8px; white-space: nowrap; }
@@ -263,6 +264,7 @@
 @media (max-width: 900px) {
   .canvas-heading { padding-inline: 17px; }
   .canvas-hint { display: none; }
+  .map-menu-toggle > span { display: none; }
 }
 @media (max-width: 680px) {
   .canvas-heading { padding-inline: 11px; }

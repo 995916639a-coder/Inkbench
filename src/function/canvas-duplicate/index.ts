@@ -1,0 +1,1 @@
+export { duplicateCanvas } from "./duplicateCanvas";

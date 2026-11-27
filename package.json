@@ -1,6 +1,6 @@
 {
   "name": "inkbench",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "private": true,
   "description": "A local notebook and canvas for programmers",
   "author": {
@@ -17,6 +17,7 @@
   "scripts": {
     "dev": "vite --host 127.0.0.1 --strictPort",
     "typecheck": "tsc --noEmit",
+    "test": "node scripts/test.mjs",
     "build": "vite build && esbuild desktop/main.ts desktop/preload.ts --bundle --platform=node --target=node22 --format=cjs --out-extension:.js=.cjs --external:electron --outdir=dist/desktop",
     "desktop": "npm run build && electron .",
     "package:linux": "npm run build && electron-builder --linux deb"
