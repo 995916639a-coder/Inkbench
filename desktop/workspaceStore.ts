@@ -26,6 +26,23 @@ function hasDocument(value: Record<string, unknown>): boolean {
     && value.content.type === "doc" && isDocumentNode(value.content);
 }
 
+function isLanguageVersion(value: unknown): value is Record<string, unknown> {
+  return isRecord(value) && (value.language === "zh-CN" || value.language === "en");
+}
+
+function isNoteTranslation(value: unknown): boolean {
+  return isLanguageVersion(value) && isRecord(value.alternate) && hasDocument(value.alternate);
+}
+
+function isMapTranslation(value: unknown): boolean {
+  if (!isLanguageVersion(value) || !isRecord(value.alternate)) return false;
+  const { nodes, edges } = value.alternate;
+  return Array.isArray(nodes) && nodes.every((node) =>
+    isRecord(node) && typeof node.id === "string" && typeof node.text === "string")
+    && Array.isArray(edges) && edges.every((edge) =>
+      isRecord(edge) && typeof edge.id === "string" && (edge.label === undefined || typeof edge.label === "string"));
+}
+
 function isCanvasItem(value: unknown): boolean {
   if (!isRecord(value) || typeof value.id !== "string") return false;
   if (value.kind === "stroke") {
@@ -66,6 +83,7 @@ function isCanvas(value: unknown): boolean {
   return isRecord(value) && typeof value.id === "string" && typeof value.title === "string"
     && Array.isArray(value.items) && value.items.every(isCanvasItem)
     && (value.mindMap === undefined || isMindMap(value.mindMap))
+    && (value.mapTranslation === undefined || isMapTranslation(value.mapTranslation))
     && isRecord(value.viewport) && isPoint(value.viewport.offset)
     && typeof value.viewport.scale === "number" && Number.isFinite(value.viewport.scale)
     && value.viewport.scale > 0;
@@ -75,7 +93,8 @@ function isWorkspace(value: unknown): value is Workspace {
   return isRecord(value) && value.version === 1
     && (value.sidebarCollapsed === undefined || typeof value.sidebarCollapsed === "boolean")
     && Array.isArray(value.notes)
-    && value.notes.every((note) => isRecord(note) && typeof note.id === "string" && hasDocument(note))
+    && value.notes.every((note) => isRecord(note) && typeof note.id === "string" && hasDocument(note)
+      && (note.translation === undefined || isNoteTranslation(note.translation)))
     && Array.isArray(value.canvases) && value.canvases.every(isCanvas)
     && (value.activeEntry === null || (isRecord(value.activeEntry)
       && (value.activeEntry.kind === "note" || value.activeEntry.kind === "canvas")

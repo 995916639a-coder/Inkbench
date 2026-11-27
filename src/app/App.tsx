@@ -3,6 +3,8 @@ import { Check, ChevronRight, CircleAlert, LayoutGrid, Maximize, NotebookText, P
 import { duplicateCanvas } from "../function/canvas-duplicate";
 import { createNote } from "../function/documents";
 import { importMarkdownFile } from "../function/markdown-import";
+import type { MindMap } from "../function/mind-map";
+import { applyNoteTranslation, switchNoteTranslation } from "../function/note-translation";
 import { CanvasView } from "../views/canvas/CanvasView";
 import { NotesView } from "../views/notes/NotesView";
 import { WorkspaceSearchDialog } from "../views/search/WorkspaceSearchDialog";
@@ -27,6 +29,7 @@ export interface AppProps {
 }
 
 type SaveStatus = "saved" | "saving" | "failed";
+type TranslationRequest = TranslationSource & { replaceMap?: (map: MindMap, direction: TranslationDirection) => boolean };
 
 export function App({ storage, isPreview = false, toggleMaximized, windowZoom, translation }: AppProps) {
   const { t } = useTranslation();
@@ -40,7 +43,7 @@ export function App({ storage, isPreview = false, toggleMaximized, windowZoom, t
   const [alert, setAlert] = useState<string | null>(null);
   const [importing, setImporting] = useState(false);
   const [sidebarDialog, setSidebarDialog] = useState<"updates" | "settings" | null>(null);
-  const [translationSource, setTranslationSource] = useState<TranslationSource | null>(null);
+  const [translationSource, setTranslationSource] = useState<TranslationRequest | null>(null);
   const [searchOpen, setSearchOpen] = useState(false);
   const [canvasNode, setCanvasNode] = useState<{ canvasId: string; nodeId: string } | null>(null);
 
@@ -135,20 +138,23 @@ export function App({ storage, isPreview = false, toggleMaximized, windowZoom, t
     save({ ...workspace, canvases: [...workspace.canvases, copy], activeEntry: { kind: "canvas", id: copy.id } });
   }
 
-  function saveTranslation(result: TranslationSource, direction: TranslationDirection) {
-    const language = direction === "zh-en" ? "English" : "简体中文";
-    update((previous) => {
-      if (result.kind === "note") {
-        const id = crypto.randomUUID();
-        const name = result.note.title.trim() || t("未命名笔记");
-        return { ...previous, notes: [...previous.notes, { ...result.note, id, title: `${name} · ${language}` }],
-          activeEntry: { kind: "note", id } };
-      }
-      const name = result.canvas.title.trim() || t("未命名画布");
-      const canvas = duplicateCanvas(result.canvas, previous.canvases.map(({ title }) => title), undefined, `${name} · ${language}`);
-      return { ...previous, canvases: [...previous.canvases, canvas], activeEntry: { kind: "canvas", id: canvas.id } };
-    });
+  function applyTranslation(result: TranslationSource, direction: TranslationDirection): boolean {
+    const source = translationSource;
+    const workspace = current.current;
+    if (!workspace || !source) return false;
+
+    if (source.kind === "note" && result.kind === "note") {
+      const note = workspace.notes.find(({ id }) => id === source.note.id);
+      if (!note || note.title !== source.note.title || note.content !== source.note.content) return false;
+      const translated = applyNoteTranslation(note, result.note, direction);
+      save({ ...workspace, notes: workspace.notes.map((item) => item === note ? translated : item) });
+    } else if (source.kind === "canvas" && result.kind === "canvas") {
+      if (!result.canvas.mindMap || !source.replaceMap?.(result.canvas.mindMap, direction)) return false;
+    } else {
+      return false;
+    }
     setTranslationSource(null);
+    return true;
   }
 
   function deleteEntry(entry: WorkspaceEntry) {
@@ -228,12 +234,14 @@ export function App({ storage, isPreview = false, toggleMaximized, windowZoom, t
         </div>}
         {canvas ? <CanvasView key={canvas.id} canvas={canvas} notes={workspace?.notes ?? []}
           revealNode={canvasNode?.canvasId === canvas.id ? canvasNode : undefined}
-          onTranslate={translation ? () => setTranslationSource({ kind: "canvas", canvas }) : undefined}
+          onTranslate={translation ? (canvas, replaceMap) => setTranslationSource({ kind: "canvas", canvas, replaceMap }) : undefined}
           onChange={(changed) => update((previous) => ({
             ...previous, canvases: previous.canvases.map((item) => item.id === changed.id ? changed : item),
           }))} />
           : note ? <NotesView key={note.id} note={note}
-            onTranslate={translation ? () => setTranslationSource({ kind: "note", note }) : undefined}
+            onTranslate={note.translation ? () => update((previous) => ({
+              ...previous, notes: previous.notes.map((item) => item.id === note.id ? switchNoteTranslation(item) : item),
+            })) : translation ? () => setTranslationSource({ kind: "note", note }) : undefined}
             onChange={(changed) => update((previous) => ({
             ...previous, notes: previous.notes.map((item) => item.id === changed.id ? changed : item),
           }))} />
@@ -258,7 +266,7 @@ export function App({ storage, isPreview = false, toggleMaximized, windowZoom, t
       {sidebarDialog === "updates" && <UpdatesDialog onClose={() => setSidebarDialog(null)} />}
       {sidebarDialog === "settings" && <SettingsDialog zoom={windowZoom} onClose={() => setSidebarDialog(null)} />}
       {translationSource && translation && <TranslationDialog source={translationSource} engine={translation}
-        onSave={saveTranslation} onClose={() => setTranslationSource(null)} />}
+        onApply={applyTranslation} onClose={() => setTranslationSource(null)} />}
       {entryToDelete && <div className="dialog-backdrop" onClick={() => setEntryToDelete(null)}>
         <form role="alertdialog" aria-modal="true" aria-labelledby="delete-title" className="dialog"
           onClick={(event) => event.stopPropagation()} onSubmit={(event) => {

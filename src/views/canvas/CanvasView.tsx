@@ -16,6 +16,8 @@ import {
 } from "../../function/mind-map";
 import type { MindMap, MindMapNode, MindMapShape } from "../../function/mind-map";
 import { renderMindMapPng } from "../../function/mind-map-export";
+import { captureMindMapLabels, switchMindMapTranslation, translatedVersion } from "../../function/note-translation";
+import type { TranslationDirection } from "../../function/note-translation";
 import { fitViewport, panViewport, screenToCanvas, zoomViewport } from "../../function/viewport";
 import type { CanvasViewport, Point } from "../../function/viewport";
 import type { CanvasDocument } from "../../workspace/workspace";
@@ -34,7 +36,7 @@ export interface CanvasViewProps {
   notes: readonly Note[];
   onChange: (canvas: CanvasDocument) => void;
   revealNode?: { nodeId: string };
-  onTranslate?: () => void;
+  onTranslate?: (source: CanvasDocument, replace: (map: MindMap, direction: TranslationDirection) => boolean) => void;
 }
 
 type NoteContent = Pick<Note, "title" | "content">;
@@ -280,7 +282,36 @@ export function CanvasView({ canvas, notes, onChange, revealNode, onTranslate }:
     setEditing(null);
     setOutlineOpen(false);
     const { canvas, onChange } = latest.current;
-    onChange({ ...canvas, mindMap: snapshot.map, viewport: snapshot.viewport ?? canvas.viewport });
+    const mapTranslation = snapshot.mapTranslation === undefined ? canvas.mapTranslation : snapshot.mapTranslation ?? undefined;
+    onChange({ ...canvas, mindMap: snapshot.map, mapTranslation, viewport: snapshot.viewport ?? canvas.viewport });
+  }
+
+  function applyMapLanguage(mindMap: MindMap, mapTranslation: NonNullable<CanvasDocument["mapTranslation"]>) {
+    const { canvas, onChange } = latest.current;
+    if (!canvas.mindMap) return;
+    history.record({ map: canvas.mindMap, mapTranslation: canvas.mapTranslation ?? null }, { map: mindMap, mapTranslation });
+    const next = { ...canvas, mindMap, mapTranslation };
+    latest.current = { canvas: next, onChange };
+    setEditing(null);
+    setLinkSource(null);
+    onChange(next);
+  }
+
+  function translateMap() {
+    setMenu(null);
+    const { canvas } = latest.current;
+    const { mindMap, mapTranslation } = canvas;
+    if (!mindMap) return;
+    if (mapTranslation) {
+      const next = switchMindMapTranslation(mindMap, mapTranslation);
+      applyMapLanguage(next.mindMap, next.mapTranslation);
+      return;
+    }
+    onTranslate?.(canvas, (translated, direction) => {
+      if (latest.current.canvas.mindMap !== mindMap) return false;
+      applyMapLanguage(translated, translatedVersion(direction, captureMindMapLabels(mindMap)));
+      return true;
+    });
   }
 
   async function exportMindMap() {
@@ -611,7 +642,8 @@ export function CanvasView({ canvas, notes, onChange, revealNode, onTranslate }:
         onUndoMap={() => restoreMindMap(history.undo())}
         onRedoMap={() => restoreMindMap(history.redo())}
         onUndo={() => onChange({ ...canvas, items: undoLastStroke(canvas.items) })}
-        onTranslateMindMap={onTranslate ? () => { setMenu(null); onTranslate(); } : undefined}
+        mapTranslationLanguage={canvas.mapTranslation?.language}
+        onTranslateMindMap={onTranslate || canvas.mapTranslation ? translateMap : undefined}
         onZoom={changeZoom} />
     </div>
   </section>;

@@ -1,5 +1,6 @@
 import { ArrowLeft, ArrowUpRight, BookOpen, Circle, Download, FileUp, Focus, Hand, Languages, Link2, List, Minus, MousePointer2, Network, PenLine, Plus, RectangleHorizontal, Redo2, Rows3, Type, Undo2 } from "lucide-react";
 import { useTranslation } from "../../i18n";
+import type { ContentLanguage } from "../../function/note-translation";
 import type { Note } from "../../function/documents";
 import { annotationArrowPath } from "../../function/drawing";
 import type { ArrowBend } from "../../function/drawing";
@@ -37,6 +38,7 @@ interface CanvasToolbarProps {
   onUndo: () => void;
   onZoom: (scale: number) => void;
   onTranslateMindMap?: () => void;
+  mapTranslationLanguage?: ContentLanguage;
 }
 
 const tools = [
@@ -70,7 +72,7 @@ export function CanvasToolbar({
   tool, scale, notes, menu, canUndo, hasMindMap, canArrangeMindMap, undoMapLabel, canRedoMap, arrowBend, onArrowBend,
   onChooseTool, onMenuChange, onChooseNote,
   onImportMarkdown, onImportMindMap, onGenerateFromNote, onFitMindMap, onShowMindMapOutline, onExportMindMap, onArrangeMindMap,
-  onUndoMap, onRedoMap, onUndo, onZoom, onTranslateMindMap,
+  onUndoMap, onRedoMap, onUndo, onZoom, onTranslateMindMap, mapTranslationLanguage,
 }: CanvasToolbarProps) {
   const { t } = useTranslation();
   const mapMenuOpen = menu === "mind-map" || menu === "map-notes";
@@ -123,7 +125,7 @@ export function CanvasToolbar({
           {canRedoMap && <button type="button" onClick={onRedoMap} title="Ctrl+Shift+Z"><Redo2 size={16} />{t("重做导图操作")}</button>}
           <button type="button" disabled={!hasMindMap} onClick={onExportMindMap}><Download size={16} />{t("导出 PNG")}</button>
           {onTranslateMindMap && <button type="button" disabled={!hasMindMap} onClick={onTranslateMindMap}>
-            <Languages size={16} />{t("翻译导图")}
+            <Languages size={16} />{t(mapTranslationLanguage ? mapTranslationLanguage === "zh-CN" ? "切回英文" : "切回中文" : "翻译导图")}
           </button>}
         </div>}
         {menu === "map-notes" && <div className="note-picker-menu" aria-label={t("选择生成导图的笔记")}>

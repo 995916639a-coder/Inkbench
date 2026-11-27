@@ -15,7 +15,7 @@
 | `src/views/canvas/CanvasItemsLayer.tsx`、`MindMapLayer.tsx` | 分别显示普通画布对象和导图节点，页面负责协调交互和保存。 |
 | `src/views/updates/UpdatesDialog.tsx` | `UpdatesDialog` 将根目录的 `update.md` 渲染为侧栏更新公告。 |
 | `src/views/settings/SettingsDialog.tsx` | `SettingsDialog` 提供桌面界面缩放控件，通过 `WindowZoom` 读写窗口比例。 |
-| `src/views/translation/TranslationDialog.tsx`、`src/i18n/` | 翻译弹窗展示译文，界面词条和语言偏好由 i18next 管理。 |
+| `src/views/translation/TranslationDialog.tsx`、`src/i18n/` | 翻译弹窗选择方向并显示进度，界面词条和语言偏好由 i18next 管理。 |
 | `src/editor/RichTextEditor.tsx` | `RichTextEditor` 接收结构化正文，通过 `onChange` 返回更新后的正文。 |
 
 ## 底层能力
@@ -31,7 +31,7 @@
 | `src/function/canvas-items/` | 管理文本框、笔记卡片和已提交的笔迹。 |
 | `src/function/drawing/` | 将指针输入整理成一笔可保存的轨迹。 |
 | `src/function/viewport/` | 计算平移、缩放和坐标转换。 |
-| `src/function/note-translation/` | 从笔记和思维导图提取可翻译文字，将译文写回原结构的副本。 |
+| `src/function/note-translation/` | 按原有结构生成译文，保存并切换笔记和导图的中英文内容。 |
 
 工作台组装页面，页面调用能力，底层能力接收数据并返回结果。能力通过各自的 `index.ts` 提供上层实际使用的入口。React 组件和业务操作以具名函数为主，数据结构用 TypeScript 类型。
 

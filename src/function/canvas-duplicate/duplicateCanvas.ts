@@ -24,9 +24,22 @@ export function duplicateCanvas(
       edges: copy.mindMap.edges.flatMap((edge) => {
         const from = ids.get(edge.from);
         const to = ids.get(edge.to);
-        return from && to ? [{ ...edge, id: nextId(), from, to }] : [];
+        if (!from || !to) return [];
+        const id = nextId();
+        ids.set(edge.id, id);
+        return [{ ...edge, id, from, to }];
       }),
     };
+    if (copy.mapTranslation) {
+      function remap<T extends { id: string }>(entries: readonly T[]): T[] {
+        return entries.flatMap((entry) => {
+          const id = ids.get(entry.id);
+          return id ? [{ ...entry, id }] : [];
+        });
+      }
+      const { nodes, edges } = copy.mapTranslation.alternate;
+      copy.mapTranslation.alternate = { nodes: remap(nodes), edges: remap(edges) };
+    }
   }
   return copy;
 }

@@ -1,3 +1,5 @@
+import type { LanguageVersions } from "../note-translation";
+
 type JsonValue = null | boolean | number | string | JsonValue[] | { [key: string]: JsonValue };
 
 export interface DocumentMark {
@@ -17,10 +19,14 @@ export interface DocumentContent extends DocumentNode {
   type: "doc";
 }
 
-export interface Note {
-  id: string;
+export interface NoteContent {
   title: string;
   content: DocumentContent;
+}
+
+export interface Note extends NoteContent {
+  id: string;
+  translation?: LanguageVersions<NoteContent>;
 }
 
 export function createNote(id: string, title = "未命名笔记"): Note {

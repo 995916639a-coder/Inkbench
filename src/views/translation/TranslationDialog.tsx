@@ -1,6 +1,5 @@
 import { useEffect, useRef, useState } from "react";
 import { Languages, X } from "lucide-react";
-import { RichTextEditor } from "../../editor/RichTextEditor";
 import type { Note } from "../../function/documents";
 import {
   documentLanguageSample, isTranslationDirection, suggestedDirection, translateMindMap, translateNote,
@@ -11,22 +10,21 @@ import type { DesktopTranslation } from "../../workspace/desktopWorkspace";
 import type { CanvasDocument } from "../../workspace/workspace";
 import "./translation.css";
 
-export type TranslationSource = { kind: "note"; note: Pick<Note, "title" | "content"> }
+export type TranslationSource = { kind: "note"; note: Note }
   | { kind: "canvas"; canvas: CanvasDocument };
 
 interface TranslationDialogProps {
   source: TranslationSource;
   engine: DesktopTranslation;
-  onSave: (result: TranslationSource, direction: TranslationDirection) => void;
+  onApply: (result: TranslationSource, direction: TranslationDirection) => boolean;
   onClose: () => void;
 }
 
-export function TranslationDialog({ source, engine, onSave, onClose }: TranslationDialogProps) {
+export function TranslationDialog({ source, engine, onApply, onClose }: TranslationDialogProps) {
   const { t } = useTranslation();
   const dialog = useRef<HTMLDialogElement>(null);
   const running = useRef(false);
   const [busy, setBusy] = useState(false);
-  const [result, setResult] = useState<TranslationSource | null>(null);
   const [message, setMessage] = useState<string | null>(null);
   const [direction, setDirection] = useState(() => suggestedDirection(source.kind === "note"
     ? documentLanguageSample(source.note.content) || source.note.title
@@ -38,18 +36,19 @@ export function TranslationDialog({ source, engine, onSave, onClose }: Translati
     if (running.current) return;
     running.current = true;
     setMessage(null);
-    setResult(null);
     setBusy(true);
     try {
+      let result: TranslationSource | null = null;
       if (source.kind === "note") {
         const note = await translateNote(source.note, direction, engine.translate);
-        if (note && running.current) setResult({ kind: "note", note });
-        else if (running.current) setMessage("没有找到当前方向可翻译的文字。");
+        if (note) result = { kind: "note", note: { ...source.note, ...note } };
       } else if (source.canvas.mindMap) {
         const map = await translateMindMap(source.canvas.mindMap, direction, engine.translate);
-        if (map && running.current) setResult({ kind: "canvas", canvas: { ...source.canvas, mindMap: map } });
-        else if (running.current) setMessage("没有找到当前方向可翻译的文字。");
+        if (map) result = { kind: "canvas", canvas: { ...source.canvas, mindMap: map } };
       }
+      if (!running.current) return;
+      if (!result) setMessage("没有找到当前方向可翻译的文字。");
+      else if (!onApply(result, direction)) setMessage("原内容已变更。请关闭后重新翻译。");
     } catch {
       if (running.current) setMessage("无法完成离线翻译，请重试。");
     } finally {
@@ -78,7 +77,6 @@ export function TranslationDialog({ source, engine, onSave, onClose }: Translati
             const next = event.currentTarget.value;
             if (!isTranslationDirection(next)) return;
             setDirection(next);
-            setResult(null);
             setMessage(null);
           }}>
             <option value="en-zh">{t("英文 → 中文")}</option>
@@ -89,27 +87,6 @@ export function TranslationDialog({ source, engine, onSave, onClose }: Translati
       </div>
       {busy && <p role="status" className="translation-status">{t("正在本机翻译…")}</p>}
       {message && <p role="status" className="translation-status">{t(message)}</p>}
-      {result?.kind === "note" && <section className="translation-preview" aria-label={t("译文")} lang={direction === "zh-en" ? "en" : "zh-CN"}>
-        {result.note.title && <h2>{result.note.title}</h2>}
-        <RichTextEditor content={result.note.content} editable={false} />
-      </section>}
-      {result?.kind === "canvas" && source.kind === "canvas" && <section className="translation-preview" aria-label={t("译文")}>
-        <TranslationLabels
-          original={[...(source.canvas.mindMap?.nodes.map(({ text }) => text) ?? []), ...(source.canvas.mindMap?.edges.map(({ label }) => label ?? "") ?? [])]}
-          translated={[...(result.canvas.mindMap?.nodes.map(({ text }) => text) ?? []), ...(result.canvas.mindMap?.edges.map(({ label }) => label ?? "") ?? [])]}
-        />
-      </section>}
     </div>
-    {result && <footer className="translation-footer">
-      <button type="button" className="primary-button" onClick={() => onSave(result, direction)}>{t("保存为副本")}</button>
-    </footer>}
   </dialog>;
-}
-
-function TranslationLabels({ original, translated }: { original: string[]; translated: string[] }) {
-  const { t } = useTranslation();
-  return <table className="translation-labels">
-    <thead><tr><th scope="col">{t("原文")}</th><th scope="col">{t("译文")}</th></tr></thead>
-    <tbody>{original.map((label, index) => label.trim() && <tr key={index}><td>{label}</td><td>{translated[index]}</td></tr>)}</tbody>
-  </table>;
 }
